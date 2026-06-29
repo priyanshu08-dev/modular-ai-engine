@@ -1,16 +1,15 @@
-from app.providers import ProviderFactory
+from app.engine import AIEngine
 
 
 class ChatService:
 
     def __init__(self):
 
-        provider = ProviderFactory.get_provider()
+        self.engine = AIEngine()
 
-        self.llm = provider.get_chat_model()
+    async def chat(
+        self,
+        message: str,
+    ) -> str:
 
-    async def chat(self, message: str):
-
-        response = await self.llm.ainvoke(message)
-
-        return response.content
+        return await self.engine.run(message)
