@@ -15,10 +15,16 @@ chat_service = ChatService()
     "/",
     response_model=ChatResponse,
 )
-async def chat(request: ChatRequest):
+async def chat(
+    request: ChatRequest,
+):
 
-    response = await chat_service.chat(request.message)
+    conversation_id, response = await chat_service.chat(
+        message=request.message,
+        conversation_id=request.conversation_id,
+    )
 
     return ChatResponse(
+        conversation_id=conversation_id,
         response=response,
     )

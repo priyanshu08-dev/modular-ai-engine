@@ -10,6 +10,10 @@ class ChatService:
     async def chat(
         self,
         message: str,
-    ) -> str:
+        conversation_id: str | None = None,
+    ) -> tuple[str, str]:
 
-        return await self.engine.run(message)
+        return await self.engine.run(
+            message=message,
+            conversation_id=conversation_id,
+        )

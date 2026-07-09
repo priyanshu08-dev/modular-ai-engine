@@ -152,3 +152,79 @@ The next milestone will transform the AI Engine from a simple request executor i
 * Tool Calling
 * Multi-Agent Workflows
 * Production Deployment
+
+
+
+## Milestone 6 — Project Documentation
+
+### Added
+
+- README.md for project overview, setup instructions, and usage.
+- ARCHITECTURE.md documenting the system architecture, request flow, and component responsibilities.
+- ROADMAP.md outlining completed milestones and future development plans.
+- CHANGELOG.md for milestone-based project history.
+- PROJECTGUIDE.md containing development philosophy, engineering principles, and project structure.
+
+### Changed
+
+- Established a standardized documentation structure for the project.
+- Consolidated architectural documentation into dedicated documents to reduce duplication.
+- Introduced milestone-based documentation updates as part of the development workflow.
+
+### Notes
+
+This milestone establishes a maintainable documentation foundation for the project. All future milestones will include synchronized updates to the README, Architecture, Roadmap, Changelog, and Project Guide to ensure the codebase and documentation evolve together.
+
+
+
+## Milestone 7 — Execution Pipeline
+
+### Added
+
+- ExecutionPipeline for sequential request execution.
+- ExecutionContext for sharing execution state across pipeline steps.
+- PromptStep to populate system prompts.
+- ProviderStep to execute requests using the configured LangChain provider.
+
+### Changed
+
+- Refactored AIEngine to delegate execution through the pipeline.
+- Simplified orchestration responsibilities within the AI Engine.
+
+### Removed
+
+- Legacy engine routing placeholder (`router.py`).
+
+### Notes
+
+This milestone introduces the execution architecture that future components such as Memory, RAG, Tool Calling, Streaming, and LangGraph will build upon.
+
+
+## Milestone 8 — Conversation Memory & LangChain Message Pipeline
+
+### Added
+
+- Conversation memory subsystem.
+- MemoryManager to coordinate conversation lifecycle.
+- BaseMemoryStore abstraction.
+- InMemoryStore implementation for development.
+- MemoryStep for conversation history management.
+- Conversation ID support across the API.
+- LangChain BaseMessage-based execution context.
+
+### Changed
+
+- Refactored ExecutionContext to use LangChain messages instead of individual prompt fields.
+- Updated AIEngine to orchestrate memory-aware conversations.
+- Refactored ProviderStep to consume LangChain message history directly.
+- Introduced shared MemoryManager instance across the application.
+- Updated chat API to support multi-turn conversations using conversation IDs.
+
+### Removed
+
+- PromptStep from the execution pipeline.
+- Legacy prompt assembly using `system_prompt` and `user_message`.
+
+### Architecture Impact
+
+The AI Engine now supports stateful multi-turn conversations through a modular memory subsystem. Conversation history is represented using LangChain message objects, allowing future capabilities such as Retrieval-Augmented Generation (RAG), Tool Calling, Streaming, and LangGraph workflows to integrate naturally without further architectural changes.

@@ -30,7 +30,7 @@ The backend is designed so that applications only communicate with one API, whil
 
 # 2. High-Level Request Flow
 
-Current request flow:
+CCurrent request flow:
 
 ```text
 Client
@@ -48,7 +48,11 @@ Chat Service
 AI Engine
    │
    ▼
-Prompt Manager
+Execution Pipeline
+   │
+   ├── MemoryStep
+   │
+   └── ProviderStep
    │
    ▼
 Provider Factory
@@ -72,8 +76,7 @@ FastAPI
 Client
 ```
 
-This flow will evolve over time, but the API layer should remain stable.
-
+The API layer remains stable while the execution pipeline can evolve internally as new AI capabilities are introduced.
 ---
 
 # 3. Current Folder Structure
@@ -86,6 +89,11 @@ app/
 ├── api/
 ├── config/
 ├── engine/
+│   ├── pipeline/
+│   │   └── steps/
+│   ├── execution_context.py
+│   ├── core.py
+│   └── prompt_manager.py
 ├── providers/
 ├── schemas/
 ├── services/
@@ -93,9 +101,7 @@ app/
 └── main.py
 ```
 
-Every folder has one responsibility.
-
-No folder should perform another folder's job.
+The `engine` package now contains the execution pipeline responsible for orchestrating AI request processing.
 
 ---
 
@@ -182,22 +188,22 @@ The brain of the application.
 
 Current responsibilities
 
-* Execute AI requests
-* Build AI execution flow
-* Manage prompts
-* Manage request state
+- Coordinate AI execution.
+- Manage the execution pipeline.
+- Manage conversation memory.
+- Manage execution context.
+- Delegate requests to AI providers.
 
 Future responsibilities
 
-* Execution Pipeline
-* Conversation Memory
-* Retrieval-Augmented Generation
-* Planning
-* Tool execution
-* LangGraph orchestration
-* Multi-agent workflows
+- Streaming
+- Retrieval-Augmented Generation (RAG)
+- Planning
+- Tool Calling
+- LangGraph orchestration
+- Multi-agent workflows
 
-The engine should become the single place where AI reasoning happens.
+The engine acts as the central orchestration layer for all AI capabilities.
 
 ---
 
@@ -307,23 +313,23 @@ It should not communicate directly with providers.
 
 Purpose
 
-Central execution engine.
+Central orchestration engine.
 
 Current responsibilities
 
-* Receive user message
-* Obtain prompt
-* Obtain provider
-* Execute request
-* Return response
+* Create an ExecutionContext.
+* Execute the ExecutionPipeline.
+* Return the final AI response.
+
+The AIEngine no longer performs prompt construction or provider communication directly.
+
+Instead, it delegates execution to the pipeline, allowing new capabilities to be added without modifying the engine itself.
 
 Future responsibilities
 
-* Conversation memory
-* Retrieval
-* Planning
-* Tool execution
-* LangGraph
+* Execute configurable workflows.
+* Coordinate pipeline execution.
+* Support LangGraph orchestration.
 
 Every AI capability should plug into the engine instead of bypassing it.
 
@@ -350,31 +356,121 @@ Future
 
 ---
 
-## EngineState
+## ExecutionPipeline
 
 Purpose
 
-Represent one AI execution.
+Coordinate AI execution through independent pipeline steps.
+
+Current pipeline
+
+```text
+MemoryStep
+
+↓
+
+ProviderStep
+```
+
+Responsibilities
+
+- Build LangChain message history.
+- Retrieve conversation memory.
+- Execute AI requests.
+- Persist updated conversations.
+
+Future pipeline steps
+
+- StreamingStep
+- RetrieverStep
+- ToolStep
+- RAGStep
+- PlanningStep
+
+The execution pipeline provides a modular architecture where new AI capabilities can be introduced without modifying the AI Engine.
+
+---
+
+
+
+## Pipeline Steps
+
+Each pipeline step has one responsibility.
+
+### PromptStep
+
+Loads the system prompt into the ExecutionContext.
+
+### ProviderStep
+
+Obtains the configured LangChain model and performs the AI request.
+
+Future steps will include conversation memory, retrieval, planning, tool execution, streaming, and persistence.
+
+
+---
+
+
+## ExecutionContext
+
+Purpose
+
+Represent the complete state of a single AI execution.
 
 Current
 
 Stores
 
-* User message
+- Conversation ID
+- Input message
+- LangChain message history
+- Final response
+- Execution metadata
 
 Future
 
 Will also contain
 
-* Conversation ID
-* Memory
-* Retrieved documents
-* Metadata
-* Token usage
-* Latency
-* Provider information
+- Retrieved documents
+- Tool results
+- Streaming state
+- Token usage
+- Latency
+- Provider information
+
+ExecutionContext acts as the shared state object passed through every pipeline step.
 
 ---
+
+
+
+## Memory Subsystem
+
+Purpose
+
+Provide a provider-independent conversation memory abstraction.
+
+Components
+
+- MemoryManager
+- BaseMemoryStore
+- InMemoryStore
+
+Responsibilities
+
+- Create conversation IDs.
+- Retrieve conversation history.
+- Persist conversation messages.
+- Abstract memory storage implementation.
+
+Future implementations
+
+- RedisMemoryStore
+- PostgreSQLMemoryStore
+- VectorMemoryStore
+- LangGraph State
+
+
 
 ## ProviderFactory
 
@@ -467,7 +563,28 @@ AIEngine
 ```
 
 ```text
+```text
 AIEngine
+
+owns
+
+↓
+
+ExecutionPipeline
+```
+
+```text
+ExecutionPipeline
+
+executes
+
+↓
+
+PromptStep
+```
+
+```text
+PromptStep
 
 uses
 
@@ -477,13 +594,34 @@ PromptManager
 ```
 
 ```text
-AIEngine
+ExecutionPipeline
+
+executes
+
+↓
+
+ProviderStep
+```
+
+```text
+ProviderStep
 
 uses
 
 ↓
 
 ProviderFactory
+```
+
+```text
+ProviderFactory
+
+creates
+
+↓
+
+GroqProvider
+```
 ```
 
 ```text
@@ -641,15 +779,23 @@ AIEngine
 
 ↓
 
-PromptManager
+ExecutionContext
+
+↓
+
+ExecutionPipeline
+
+↓
+
+MemoryStep
+
+↓
+
+ProviderStep
 
 ↓
 
 ProviderFactory
-
-↓
-
-GroqProvider
 
 ↓
 
@@ -664,61 +810,67 @@ Groq API
 Response
 ```
 
-At this stage the engine acts as a centralized execution layer.
-
-Future milestones will extend this flow rather than replacing it.
+Conversation history is automatically loaded and persisted through the memory subsystem, while the AI Engine remains responsible only for orchestration.
 
 ---
 
 # 10. Planned Evolution
 
-The engine is intentionally designed to grow.
+The execution pipeline is intentionally designed to grow.
 
 Current
 
 ```text
-AIEngine
+ExecutionPipeline
 
 ↓
 
-Provider
+PromptStep
+
+↓
+
+ProviderStep
 ```
 
 Planned
 
 ```text
-AIEngine
+ExecutionPipeline
 
 ↓
 
-Execution Pipeline
+RoutingStep
 
 ↓
 
-Conversation Memory
+MemoryStep
 
 ↓
 
-Retrieval
+RetrieverStep
 
 ↓
 
-Prompt Construction
+RAGStep
 
 ↓
 
-Tool Calling
+PromptStep
 
 ↓
 
-LangGraph
+ToolStep
 
 ↓
 
-Provider
+StreamingStep
+
+↓
+
+ProviderStep
 ```
 
-Every new capability should plug into this pipeline without requiring changes to the API layer.
+New capabilities should be introduced as additional pipeline steps whenever possible, preserving the simplicity of the AIEngine.
 
 ---
 

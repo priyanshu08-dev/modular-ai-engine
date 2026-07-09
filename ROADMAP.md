@@ -12,7 +12,7 @@ The roadmap is intentionally flexible. As the architecture evolves, milestones m
 
 Current Version
 
-v0.1.0
+v0.3.0
 
 ---
 
@@ -24,24 +24,32 @@ v0.1.0
 
 Current Milestone
 
-M5 — AI Engine
+✅ M8 — Conversation Memory & LangChain Message Pipeline (Completed)
+
+Next Milestone
+
+M9 — Streaming Responses
+
+Next Milestone
+
+M8 — Conversation Memory
 
 ---
 
 ## Overall Progress
 
 ```text
-███████░░░░░░░░░░░░░
+███████████░░░░░░░░░
 
 Phase Progress
 
 Phase 1  ✅ 100%
-Phase 2  ⬜ 0%
+Phase 2  ✅ 50%
 Phase 3  ⬜ 0%
 Phase 4  ⬜ 0%
 Phase 5  ⬜ 0%
 
-Overall Project ≈ 35%
+Overall Project ≈ 48%
 ```
 
 The architectural backbone of the project has been completed.
@@ -147,6 +155,26 @@ All AI requests now flow through a single execution engine.
 
 ---
 
+## M6 — Project Documentation
+
+Status
+
+✅ Completed
+
+Delivered
+
+- README.md
+- ARCHITECTURE.md
+- ROADMAP.md
+- CHANGELOG.md
+- PROJECTGUIDE.md
+
+Result
+
+Established a standardized documentation system that evolves alongside the codebase and serves as the single source of truth for architecture, development progress, and engineering decisions.
+
+---
+
 # Phase 2 — Core AI Engine
 
 Objective
@@ -155,78 +183,64 @@ Transform the engine into an intelligent execution platform.
 
 ---
 
-## M6 — Execution Pipeline
+## M7 — Execution Pipeline
 
 Status
 
-🟡 Next
+✅ Completed
 
-Goal
+Delivered
 
-Transform the AI Engine into a staged execution pipeline.
+- ExecutionPipeline
+- ExecutionContext
+- PromptStep
+- ProviderStep
+- AIEngine refactored into an orchestration layer
 
-Current
+Result
 
-```
+The AI Engine now delegates execution through a modular pipeline, making it easy to introduce new capabilities such as Memory, RAG, Tool Calling, Streaming, and LangGraph without modifying the engine itself.
+
+Current Execution Flow
+
+```text
 Request
-
 ↓
-
-LLM
-
+ExecutionContext
 ↓
-
-Response
-```
-
-Target
-
-```
-Request
-
+ExecutionPipeline
 ↓
-
-State Creation
-
+PromptStep
 ↓
-
-Prompt Selection
-
+ProviderStep
 ↓
-
-Provider Selection
-
-↓
-
-Execution
-
-↓
-
-Response Processing
-
-↓
-
 Response
 ```
 
 ---
 
-## M7 — Conversation Memory
+## M8 — Conversation Memory & LangChain Message Pipeline
 
-Goal
+Status
 
-Introduce a memory abstraction that allows future implementations using
+✅ Completed
 
-- In-memory storage
-- Redis
-- PostgreSQL
-- Vector memory
+Delivered
 
-without changing the AI Engine.
+- MemoryManager
+- BaseMemoryStore abstraction
+- InMemoryStore
+- MemoryStep
+- Conversation ID support
+- LangChain message-based execution context
+- Shared application memory
 
+Result
+
+The AI Engine now supports stateful conversations while remaining provider-independent. Conversation history is represented using LangChain message objects, creating a foundation for future capabilities such as Streaming, RAG, Tool Calling, and LangGraph orchestration without requiring major architectural changes.
 ---
 
-## M8 — Streaming Responses
+## M9 — Streaming Responses
 
 Goal
 
@@ -248,7 +262,7 @@ Enable Retrieval-Augmented Generation.
 
 ---
 
-## M9 — Document Upload
+## M10 — Document Upload
 
 Supported formats
 
@@ -260,7 +274,7 @@ Supported formats
 
 ---
 
-## M10 — Document Processing
+## M11 — Document Processing
 
 Capabilities
 
@@ -271,13 +285,13 @@ Capabilities
 
 ---
 
-## M11 — Embeddings
+## M12 — Embeddings
 
 Generate vector embeddings for processed documents.
 
 ---
 
-## M12 — ChromaDB Integration
+## M13 — ChromaDB Integration
 
 Capabilities
 
@@ -287,7 +301,7 @@ Capabilities
 
 ---
 
-## M13 — Retrieval Pipeline
+## M14 — Retrieval Pipeline
 
 Capabilities
 
@@ -297,7 +311,7 @@ Capabilities
 
 ---
 
-## M14 — Retrieval-Augmented Generation (RAG)
+## M15 — Retrieval-Augmented Generation (RAG)
 
 Execution
 
@@ -331,7 +345,7 @@ Transform the AI Engine into a reasoning engine.
 
 ---
 
-## M15 — LangGraph Integration
+## M16 — LangGraph Integration
 
 Responsibilities
 
@@ -342,7 +356,7 @@ Responsibilities
 
 ---
 
-## M16 — Tool Calling
+## M17 — Tool Calling
 
 Planned tools
 
@@ -353,7 +367,7 @@ Planned tools
 
 ---
 
-## M17 — Multi-Agent Workflows
+## M18 — Multi-Agent Workflows
 
 Possible agents
 
@@ -372,7 +386,7 @@ Prepare the platform for deployment.
 
 ---
 
-## M18 — Testing
+## M19 — Testing
 
 - Unit Tests
 - Integration Tests
@@ -380,7 +394,7 @@ Prepare the platform for deployment.
 
 ---
 
-## M19 — Docker
+## M20 — Docker
 
 - Dockerfile
 - Docker Compose
@@ -388,7 +402,7 @@ Prepare the platform for deployment.
 
 ---
 
-## M20 — CI/CD
+## M21 — CI/CD
 
 Possible integrations
 
@@ -398,7 +412,7 @@ Possible integrations
 
 ---
 
-## M21 — Monitoring & Observability
+## M22 — Monitoring & Observability
 
 Planned
 
@@ -416,9 +430,14 @@ The first stable release should include
 
 ## Core AI
 
+Completed
+
 - Multi-provider support
 - AI Engine
 - Execution Pipeline
+
+Planned
+
 - Conversation Memory
 - Streaming Responses
 

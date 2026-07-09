@@ -1,45 +1,45 @@
-from langchain_core.messages import HumanMessage, SystemMessage
+from app.engine.execution_context import ExecutionContext
+from app.engine.pipeline import ExecutionPipeline
+from app.engine.pipeline.steps import (
+    MemoryStep,
+    ProviderStep,
+)
+from langchain_core.messages import HumanMessage
+from app.engine.memory import memory_manager
 
-from app.engine.prompt_manager import PromptManager
-from app.engine.router import EngineRouter
-from app.engine.state import EngineState
-from app.providers import ProviderFactory
 
 
 class AIEngine:
+    """
+    Central orchestration layer for AI execution.
+    """
 
     def __init__(self):
 
-        provider = ProviderFactory.get_provider()
 
-        self.llm = provider.get_chat_model()
-
-        self.router = EngineRouter()
+        self.pipeline = ExecutionPipeline(
+    [
+        MemoryStep(memory_manager),
+        ProviderStep(memory_manager),
+    ]
+)
 
     async def run(
         self,
         message: str,
-    ) -> str:
+        conversation_id: str | None = None,
+    ) -> tuple[str, str]:
 
-        state = EngineState(
-            user_message=message,
+        context = ExecutionContext(
+            conversation_id=conversation_id or "",
+            input_message=HumanMessage(content=message),
         )
 
-        if self.router.should_use_rag(state):
-
-            raise NotImplementedError(
-                "RAG not implemented."
-            )
-
-        response = await self.llm.ainvoke(
-            [
-                SystemMessage(
-                    PromptManager.get_default_prompt(),
-                ),
-                HumanMessage(
-                    message,
-                ),
-            ]
+        context = await self.pipeline.execute(
+            context,
         )
 
-        return response.content
+        return (
+            context.conversation_id,
+            context.response,
+        )
