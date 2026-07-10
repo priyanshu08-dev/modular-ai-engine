@@ -13,4 +13,21 @@ class PipelineStep(ABC):
         self,
         context: ExecutionContext,
     ) -> ExecutionContext:
+        """
+        Standard execution.
+        """
         pass
+
+    async def stream(
+        self,
+        context: ExecutionContext,
+    ) -> ExecutionContext:
+        """
+        Default streaming behavior.
+
+        Most pipeline steps behave identically for both
+        synchronous and streaming execution, so streaming
+        simply delegates to execute().
+        """
+
+        return await self.execute(context)

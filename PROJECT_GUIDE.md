@@ -8,6 +8,22 @@ Unlike the README, this guide is intended for developers who want to understand 
 
 ---
 
+## Current Version
+
+v0.5.0
+
+## Current Milestone
+
+Completed
+
+Milestone 9 — Streaming Responses
+
+## Next Milestone
+
+Milestone 10 — Document Upload & Processing
+
+---
+
 # 1. Project Purpose
 
 The Modular AI Engine is **not** a chatbot.
@@ -30,49 +46,64 @@ The backend is designed so that applications only communicate with one API, whil
 
 # 2. High-Level Request Flow
 
-CCurrent request flow:
+Current request flow:
 
 ```text
 Client
-   │
-   ▼
+
+↓
+
 FastAPI
-   │
-   ▼
-API Router
-   │
-   ▼
-Chat Service
-   │
-   ▼
-AI Engine
-   │
-   ▼
-Execution Pipeline
-   │
-   ├── MemoryStep
-   │
-   └── ProviderStep
-   │
-   ▼
-Provider Factory
-   │
-   ▼
-Groq Provider
-   │
-   ▼
-Groq API
-   │
-   ▼
-AI Response
-   │
-   ▼
-Chat Service
-   │
-   ▼
-FastAPI
-   │
-   ▼
+
+↓
+
+ChatService
+
+↓
+
+AIEngine
+
+↓
+
+ExecutionContext
+
+↓
+
+ExecutionPipeline
+
+↓
+
+MemoryStep
+
+↓
+
+ProviderStep
+        │
+        ├── execute()
+        └── stream()
+
+↓
+
+ProviderFactory
+
+↓
+
+Configured Provider
+
+↓
+
+LLM
+
+↓
+
+Server-Sent Events
+
+↓
+
+StreamingResponse
+
+↓
+
 Client
 ```
 
@@ -188,20 +219,12 @@ The brain of the application.
 
 Current responsibilities
 
-- Coordinate AI execution.
-- Manage the execution pipeline.
-- Manage conversation memory.
-- Manage execution context.
-- Delegate requests to AI providers.
-
-Future responsibilities
-
-- Streaming
-- Retrieval-Augmented Generation (RAG)
-- Planning
-- Tool Calling
-- LangGraph orchestration
-- Multi-agent workflows
+- Build ExecutionContext
+- Execute execution pipeline
+- Support synchronous execution
+- Support streaming execution
+- Return completed response
+- Return streaming response
 
 The engine acts as the central orchestration layer for all AI capabilities.
 
@@ -317,9 +340,12 @@ Central orchestration engine.
 
 Current responsibilities
 
-* Create an ExecutionContext.
-* Execute the ExecutionPipeline.
-* Return the final AI response.
+- Build ExecutionContext
+- Execute execution pipeline
+- Support synchronous execution
+- Support streaming execution
+- Return completed response
+- Return streaming response
 
 The AIEngine no longer performs prompt construction or provider communication directly.
 
@@ -372,22 +398,9 @@ MemoryStep
 ProviderStep
 ```
 
-Responsibilities
+All pipeline steps inherit the default streaming implementation.
 
-- Build LangChain message history.
-- Retrieve conversation memory.
-- Execute AI requests.
-- Persist updated conversations.
-
-Future pipeline steps
-
-- StreamingStep
-- RetrieverStep
-- ToolStep
-- RAGStep
-- PlanningStep
-
-The execution pipeline provides a modular architecture where new AI capabilities can be introduced without modifying the AI Engine.
+Only ProviderStep overrides streaming because it communicates directly with the LLM.
 
 ---
 
@@ -403,13 +416,85 @@ Loads the system prompt into the ExecutionContext.
 
 ### ProviderStep
 
-Obtains the configured LangChain model and performs the AI request.
+ProviderStep is responsible for
 
-Future steps will include conversation memory, retrieval, planning, tool execution, streaming, and persistence.
+• Invoking providers
+• Streaming provider responses
+• Persisting conversations
+• Updating ExecutionContext
+
+It is the only pipeline step with custom streaming behavior.
 
 
 ---
 
+
+## Streaming Architecture
+
+The AI Engine now supports provider-independent streaming.
+
+Streaming follows the same execution pipeline as synchronous execution.
+
+Execution Flow
+
+```text
+Client
+
+↓
+
+ChatService
+
+↓
+
+AIEngine.stream()
+
+↓
+
+ExecutionPipeline.stream()
+
+↓
+
+MemoryStep.execute()
+
+↓
+
+ProviderStep.stream()
+
+↓
+
+Provider.stream()
+
+↓
+
+LLM
+
+↓
+
+StreamingResponse
+
+↓
+
+Client
+```
+
+The streaming protocol uses Server-Sent Events (SSE).
+
+Current Events
+
+- metadata
+- token
+- done
+
+Future events
+
+- retrieval
+- tool_start
+- tool_end
+- reasoning
+- progress
+- error
+
+---
 
 ## ExecutionContext
 
@@ -799,15 +884,19 @@ ProviderFactory
 
 ↓
 
-ChatGroq
+Configured Provider
 
 ↓
 
-Groq API
+LLM
 
 ↓
 
-Response
+Server-Sent Events
+
+↓
+
+StreamingResponse
 ```
 
 Conversation history is automatically loaded and persisted through the memory subsystem, while the AI Engine remains responsible only for orchestration.

@@ -228,3 +228,27 @@ This milestone introduces the execution architecture that future components such
 ### Architecture Impact
 
 The AI Engine now supports stateful multi-turn conversations through a modular memory subsystem. Conversation history is represented using LangChain message objects, allowing future capabilities such as Retrieval-Augmented Generation (RAG), Tool Calling, Streaming, and LangGraph workflows to integrate naturally without further architectural changes.
+
+## Milestone 9 — Streaming Responses
+
+### Added
+
+- Provider-independent streaming support.
+- Streaming execution path in the AI Engine.
+- Streaming pipeline execution.
+- Streaming support in ProviderStep.
+- Server-Sent Events (SSE) API responses.
+- Base provider streaming interface.
+- Groq streaming implementation.
+
+### Changed
+
+- AI Engine now supports both synchronous and streaming execution.
+- ProviderStep refactored to use a single streaming implementation.
+- Chat endpoint migrated from JSON responses to StreamingResponse.
+- PipelineStep now provides a default streaming implementation.
+- Streaming became the primary execution model while preserving synchronous execution through stream consumption.
+
+### Architecture Impact
+
+The AI Engine now supports real-time token streaming without compromising its layered architecture. Streaming remains provider-independent and is fully integrated into the existing execution pipeline. The SSE protocol establishes a stable foundation for future capabilities such as Retrieval-Augmented Generation (RAG), Tool Calling, LangGraph workflows, reasoning traces, and progress events.

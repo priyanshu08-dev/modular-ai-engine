@@ -22,3 +22,20 @@ class ExecutionPipeline:
             context = await step.execute(context)
 
         return context
+
+    async def stream(
+        self,
+        context: ExecutionContext,
+    ) -> ExecutionContext:
+
+        if not self.steps:
+            return context
+
+        # Execute every step except the last one normally.
+        for step in self.steps[:-1]:
+            context = await step.execute(context)
+
+        # Let the last step produce the stream.
+        context = await self.steps[-1].stream(context)
+
+        return context

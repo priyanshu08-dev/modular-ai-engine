@@ -12,7 +12,7 @@ The roadmap is intentionally flexible. As the architecture evolves, milestones m
 
 Current Version
 
-v0.3.0
+v0.5.0
 
 ---
 
@@ -24,15 +24,11 @@ v0.3.0
 
 Current Milestone
 
-✅ M8 — Conversation Memory & LangChain Message Pipeline (Completed)
+✅ M9 — Streaming Responses (Completed)
 
 Next Milestone
 
-M9 — Streaming Responses
-
-Next Milestone
-
-M8 — Conversation Memory
+M10 — Document Upload & Processing
 
 ---
 
@@ -49,7 +45,7 @@ Phase 3  ⬜ 0%
 Phase 4  ⬜ 0%
 Phase 5  ⬜ 0%
 
-Overall Project ≈ 48%
+Overall Project ≈ 55%
 ```
 
 The architectural backbone of the project has been completed.
@@ -251,6 +247,17 @@ Benefits
 - Better user experience
 - Lower perceived latency
 - Improved responsiveness
+
+
+Delivered
+
+- Streaming AI execution
+- Streaming execution pipeline
+- Provider-independent streaming
+- Streaming ProviderStep
+- Server-Sent Events (SSE)
+- FastAPI StreamingResponse
+- Streaming-first execution architecture
 
 ---
 

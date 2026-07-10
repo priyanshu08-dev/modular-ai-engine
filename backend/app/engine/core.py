@@ -4,9 +4,8 @@ from app.engine.pipeline.steps import (
     MemoryStep,
     ProviderStep,
 )
-from langchain_core.messages import HumanMessage
 from app.engine.memory import memory_manager
-
+from langchain_core.messages import HumanMessage
 
 
 class AIEngine:
@@ -16,13 +15,30 @@ class AIEngine:
 
     def __init__(self):
 
-
         self.pipeline = ExecutionPipeline(
-    [
-        MemoryStep(memory_manager),
-        ProviderStep(memory_manager),
-    ]
-)
+            [
+                MemoryStep(memory_manager),
+                ProviderStep(memory_manager),
+            ]
+        )
+
+    async def stream(
+        self,
+        message: str,
+        conversation_id: str | None = None,
+    ) -> tuple[str, object]:
+
+        context = ExecutionContext(
+            conversation_id=conversation_id or "",
+            input_message=HumanMessage(content=message),
+        )
+
+        context = await self.pipeline.stream(context)
+
+        return (
+            context.conversation_id,
+            context.stream,
+        )
 
     async def run(
         self,
@@ -30,16 +46,17 @@ class AIEngine:
         conversation_id: str | None = None,
     ) -> tuple[str, str]:
 
-        context = ExecutionContext(
-            conversation_id=conversation_id or "",
-            input_message=HumanMessage(content=message),
+        conversation_id, stream = await self.stream(
+            message=message,
+            conversation_id=conversation_id,
         )
 
-        context = await self.pipeline.execute(
-            context,
-        )
+        chunks: list[str] = []
+
+        async for chunk in stream:
+            chunks.append(chunk)
 
         return (
-            context.conversation_id,
-            context.response,
+            conversation_id,
+            "".join(chunks),
         )

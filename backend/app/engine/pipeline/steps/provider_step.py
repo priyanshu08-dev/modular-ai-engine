@@ -1,3 +1,5 @@
+from collections.abc import AsyncIterator
+
 from langchain_core.messages import AIMessage
 
 from app.engine.execution_context import ExecutionContext
@@ -15,30 +17,65 @@ class ProviderStep(PipelineStep):
         self,
         memory_manager: MemoryManager,
     ):
-        provider = ProviderFactory.get_provider()
-
-        self.llm = provider.get_chat_model()
+        self.provider = ProviderFactory.get_provider()
         self.memory_manager = memory_manager
 
-    async def execute(
+    async def _stream_response(
         self,
         context: ExecutionContext,
-    ) -> ExecutionContext:
+    ) -> AsyncIterator[str]:
+        """
+        Streams the provider response while accumulating the
+        final response for conversation memory.
+        """
 
-        response = await self.llm.ainvoke(
+        chunks: list[str] = []
+
+        async for chunk in self.provider.stream(
             context.messages,
-        )
+        ):
+            chunks.append(chunk)
+            yield chunk
 
-        context.response = response.content
+        response = "".join(chunks)
+
+        context.response = response
 
         await self.memory_manager.save_messages(
             context.conversation_id,
             [
                 context.input_message,
                 AIMessage(
-                    content=response.content,
+                    content=response,
                 ),
             ],
+        )
+
+    async def execute(
+        self,
+        context: ExecutionContext,
+    ) -> ExecutionContext:
+        """
+        Consume the stream and return the complete response.
+        """
+
+        async for _ in self._stream_response(
+            context,
+        ):
+            pass
+
+        return context
+
+    async def stream(
+        self,
+        context: ExecutionContext,
+    ) -> ExecutionContext:
+        """
+        Expose the streaming response.
+        """
+
+        context.stream = self._stream_response(
+            context,
         )
 
         return context

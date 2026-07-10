@@ -89,6 +89,8 @@ As the project evolves, additional capabilities such as memory, RAG, LangGraph, 
 - AI Engine orchestration layer
 - Modular Execution Pipeline
 - Conversation Memory
+- Streaming Responses
+- Server-Sent Events
 - MemoryManager
 - LangChain message-based execution
 - Conversation ID support
@@ -216,22 +218,73 @@ Memory Step
 ↓
 
 Provider Step
+        │
+        ├── execute()
+        └── stream()
 
 ↓
 
-Provider Factory
+Provider
 
 ↓
 
-Groq Provider
-
-↓
-
-Groq API
+LLM
 ```
 
 The Execution Pipeline now manages both conversation memory and provider execution while remaining fully modular.
 
+## Request Flow
+
+```text
+Client
+
+↓
+
+FastAPI
+
+↓
+
+ChatService
+
+↓
+
+AIEngine
+
+↓
+
+ExecutionPipeline
+
+↓
+
+MemoryStep
+
+↓
+
+ProviderStep
+
+↓
+
+ProviderFactory
+
+↓
+
+Configured Provider
+
+↓
+
+LLM
+
+↓
+
+StreamingResponse
+```
+
+## Current Capabilities
+
+- Real-time streaming AI responses
+- Provider-independent streaming
+- Conversation-aware streaming
+- SSE protocol
 
 # Conversation Memory
 
@@ -270,11 +323,6 @@ The project follows a small set of engineering principles.
 - ✅ Project Documentation
 - ✅ Execution Pipeline
 - ✅ Conversation Memory & LangChain Message Pipeline
-
-
-### Next
-
-- Streaming Responses
 
 
 ### Planned
