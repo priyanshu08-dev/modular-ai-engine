@@ -1,524 +1,398 @@
 # Roadmap
 
-This document describes the long-term development roadmap of the **Modular AI Engine**.
+This document defines the long-term development plan for the **Modular AI Engine**.
 
-The project follows a **phase-based** development process. Each phase focuses on building one major subsystem of the platform. Every milestone represents a stable, tested checkpoint before moving to the next objective.
+Unlike the changelog, which records completed work, this roadmap focuses on the **current project state, future milestones, strategic objectives, and long-term vision**.
 
-The roadmap is intentionally flexible. As the architecture evolves, milestones may be reordered if a better engineering approach is discovered.
+The project follows a milestone-driven, phase-based development process where every milestone delivers a stable, production-ready subsystem before moving to the next stage.
+
+The roadmap is intentionally adaptive. As the architecture evolves, milestones may be reordered if doing so results in a cleaner or more maintainable design.
 
 ---
 
 # Current Version
 
-Current Version
-
-v0.5.0
+**v0.6.0**
 
 ---
 
 # Current Status
 
+## Development Status
+
+🚧 Active Development
+
 ## Current Phase
 
-✅ Phase 1 — Foundation
+✅ **Phase 3 — Knowledge & Retrieval**
 
-Current Milestone
+## Current Milestone
 
-✅ M9 — Streaming Responses (Completed)
+⏳ **M11 — Chunking Pipeline**
 
-Next Milestone
+## Last Completed Milestone
 
-M10 — Document Upload & Processing
+✅ **M10 — Document Upload & Processing**
 
 ---
 
-## Overall Progress
+# Overall Progress
 
 ```text
-███████████░░░░░░░░░
+█████████████░░░░░░░
 
 Phase Progress
 
 Phase 1  ✅ 100%
-Phase 2  ✅ 50%
-Phase 3  ⬜ 0%
+Phase 2  ✅ 100%
+Phase 3  ✅ 20%
 Phase 4  ⬜ 0%
 Phase 5  ⬜ 0%
 
-Overall Project ≈ 55%
+Overall Project ≈ 63%
 ```
 
-The architectural backbone of the project has been completed.
+The foundational architecture of the Modular AI Engine has been established.
 
-The remaining work focuses primarily on adding AI capabilities rather than restructuring the application.
+The remaining work primarily focuses on expanding AI capabilities—including knowledge retrieval, reasoning, orchestration, tooling, and production readiness—without requiring major architectural restructuring.
+
+---
+
+# Development Phases
 
 ---
 
 # Phase 1 — Foundation
 
-Objective
+**Status:** ✅ Completed
 
-Build a clean, production-grade backend architecture that future AI capabilities can plug into.
+### Objective
 
----
+Build a clean, scalable backend architecture capable of supporting future AI capabilities without requiring major redesigns.
 
-## M1 — Project Initialization
+### Milestones
 
-Status
-
-✅ Completed
-
-Delivered
-
-- Git repository
-- uv project initialization
-- Python environment
-- Project structure
-- pyproject.toml
-- Virtual environment
-
----
-
-## M2 — FastAPI Foundation
-
-Status
-
-✅ Completed
-
-Delivered
-
-- FastAPI application
-- Application Factory
-- Lifespan events
-- Environment configuration
-- Health endpoint
-- Swagger documentation
-
----
-
-## M3 — AI Chat
-
-Status
-
-✅ Completed
-
-Delivered
-
-- Chat endpoint
-- Chat service
-- LangChain integration
-- Groq integration
-- First AI conversation
-
----
-
-## M4 — Provider Abstraction
-
-Status
-
-✅ Completed
-
-Delivered
-
-- Base Provider
-- Provider Factory
-- Groq provider
-- OpenAI placeholder
-- Gemini placeholder
-
-Result
-
-Business logic no longer depends on a specific AI provider.
-
----
-
-## M5 — AI Engine
-
-Status
-
-✅ Completed
-
-Delivered
-
-- AI Engine
-- Prompt Manager
-- Engine State
-- Central AI execution layer
-
-Result
-
-All AI requests now flow through a single execution engine.
-
----
-
-## M6 — Project Documentation
-
-Status
-
-✅ Completed
-
-Delivered
-
-- README.md
-- ARCHITECTURE.md
-- ROADMAP.md
-- CHANGELOG.md
-- PROJECTGUIDE.md
-
-Result
-
-Established a standardized documentation system that evolves alongside the codebase and serves as the single source of truth for architecture, development progress, and engineering decisions.
+- ✅ M1 — Project Initialization
+- ✅ M2 — FastAPI Foundation
+- ✅ M3 — AI Chat Integration
+- ✅ M4 — Provider Abstraction
+- ✅ M5 — AI Engine
+- ✅ M6 — Project Documentation
 
 ---
 
 # Phase 2 — Core AI Engine
 
-Objective
+**Status:** ✅ Completed
 
-Transform the engine into an intelligent execution platform.
+### Objective
 
----
+Transform the AI Engine into a modular execution platform capable of supporting advanced AI workflows.
 
-## M7 — Execution Pipeline
+### Milestones
 
-Status
-
-✅ Completed
-
-Delivered
-
-- ExecutionPipeline
-- ExecutionContext
-- PromptStep
-- ProviderStep
-- AIEngine refactored into an orchestration layer
-
-Result
-
-The AI Engine now delegates execution through a modular pipeline, making it easy to introduce new capabilities such as Memory, RAG, Tool Calling, Streaming, and LangGraph without modifying the engine itself.
-
-Current Execution Flow
-
-```text
-Request
-↓
-ExecutionContext
-↓
-ExecutionPipeline
-↓
-PromptStep
-↓
-ProviderStep
-↓
-Response
-```
+- ✅ M7 — Execution Pipeline
+- ✅ M8 — Conversation Memory & LangChain Message Pipeline
+- ✅ M9 — Streaming Responses
+- ✅ M10 — Document Upload & Processing
 
 ---
 
-## M8 — Conversation Memory & LangChain Message Pipeline
+# Phase 3 — Knowledge & Retrieval
 
-Status
+**Status:** 🚧 In Progress
 
-✅ Completed
+### Objective
 
-Delivered
-
-- MemoryManager
-- BaseMemoryStore abstraction
-- InMemoryStore
-- MemoryStep
-- Conversation ID support
-- LangChain message-based execution context
-- Shared application memory
-
-Result
-
-The AI Engine now supports stateful conversations while remaining provider-independent. Conversation history is represented using LangChain message objects, creating a foundation for future capabilities such as Streaming, RAG, Tool Calling, and LangGraph orchestration without requiring major architectural changes.
----
-
-## M9 — Streaming Responses
-
-Goal
-
-Support real-time streaming of AI responses.
-
-Benefits
-
-- Better user experience
-- Lower perceived latency
-- Improved responsiveness
-
-
-Delivered
-
-- Streaming AI execution
-- Streaming execution pipeline
-- Provider-independent streaming
-- Streaming ProviderStep
-- Server-Sent Events (SSE)
-- FastAPI StreamingResponse
-- Streaming-first execution architecture
+Enable the AI Engine to understand, retrieve, and reason over uploaded knowledge sources.
 
 ---
 
-# Phase 3 — Knowledge Layer
+## M11 — Chunking Pipeline
 
-Objective
+**Status**
 
-Enable Retrieval-Augmented Generation.
+⏳ Next
 
----
+### Objectives
 
-## M10 — Document Upload
-
-Supported formats
-
-- PDF
-- DOCX
-- PPTX
-- TXT
-- Markdown
-
----
-
-## M11 — Document Processing
-
-Capabilities
-
-- Text extraction
-- Cleaning
-- Metadata extraction
-- Normalization
+- Chunk domain model
+- ChunkManager
+- Recursive text splitting
+- Configurable chunk size
+- Configurable chunk overlap
+- Metadata inheritance
+- Chunk validation
 
 ---
 
 ## M12 — Embeddings
 
-Generate vector embeddings for processed documents.
+### Objectives
+
+- Generate vector embeddings
+- Embedding abstraction
+- Provider-independent embedding interface
+- Batch embedding support
 
 ---
 
 ## M13 — ChromaDB Integration
 
-Capabilities
+### Objectives
 
-- Persistent storage
+- Persistent vector storage
 - Similarity search
 - Metadata filtering
+- Collection management
 
 ---
 
 ## M14 — Retrieval Pipeline
 
-Capabilities
+### Objectives
 
 - Semantic retrieval
 - Top-K search
-- Metadata-aware search
+- Metadata-aware retrieval
+- Retrieval abstraction
+- Configurable ranking
 
 ---
 
 ## M15 — Retrieval-Augmented Generation (RAG)
 
-Execution
+### Objectives
 
-```
-Question
-
-↓
-
-Retrieve Context
-
-↓
-
-Prompt Construction
-
-↓
-
-LLM
-
-↓
-
-Response
-```
+- Context retrieval
+- Prompt augmentation
+- Context-aware AI responses
+- Retrieval orchestration
+- Source attribution
+- Configurable retrieval strategies
 
 ---
 
 # Phase 4 — Intelligence
 
-Objective
+**Status:** ⬜ Planned
 
-Transform the AI Engine into a reasoning engine.
+### Objective
+
+Transform the AI Engine from a conversational backend into a full AI reasoning platform.
 
 ---
 
 ## M16 — LangGraph Integration
 
-Responsibilities
+### Objectives
 
 - Workflow orchestration
-- State management
-- Routing
+- Stateful execution
+- Dynamic routing
 - Decision making
+- Graph-based workflows
 
 ---
 
 ## M17 — Tool Calling
 
-Planned tools
+### Planned Tools
 
 - Web Search
 - SQL
 - Calculator
 - Python Execution
+- Custom Tools
 
 ---
 
 ## M18 — Multi-Agent Workflows
 
-Possible agents
+### Planned Agents
 
 - Research Agent
 - Document Analysis Agent
 - Report Generation Agent
-- Domain-specific Agents
+- Planning Agent
+- Domain-Specific Agents
 
 ---
 
 # Phase 5 — Production
 
-Objective
+**Status:** ⬜ Planned
 
-Prepare the platform for deployment.
+### Objective
+
+Prepare the Modular AI Engine for production deployment and long-term maintainability.
 
 ---
 
 ## M19 — Testing
 
+### Objectives
+
 - Unit Tests
 - Integration Tests
 - API Tests
+- Pipeline Tests
+- Provider Tests
 
 ---
 
 ## M20 — Docker
 
+### Objectives
+
 - Dockerfile
 - Docker Compose
-- Containerized deployment
+- Containerized Development
+- Production Containers
 
 ---
 
 ## M21 — CI/CD
 
-Possible integrations
+### Objectives
 
 - GitHub Actions
-- Automated testing
-- Deployment pipelines
+- Automated Testing
+- Automated Quality Checks
+- Deployment Pipelines
 
 ---
 
 ## M22 — Monitoring & Observability
 
-Planned
+### Objectives
 
-- Structured logging
-- Request tracing
+- Structured Logging
 - Metrics
-- Performance monitoring
-- Error tracking
+- Request Tracing
+- Performance Monitoring
+- Error Tracking
+- Health Monitoring
 
 ---
 
 # Version 1 Goals
 
-The first stable release should include
-
-## Core AI
-
-Completed
-
-- Multi-provider support
-- AI Engine
-- Execution Pipeline
-
-Planned
-
-- Conversation Memory
-- Streaming Responses
+The first stable release should provide a production-grade modular AI backend capable of supporting multiple intelligent applications.
 
 ---
 
-## Knowledge
+## Core AI
 
-- PDF
-- DOCX
-- PPTX
-- TXT
-- Markdown
+### Completed
+
+- Multi-provider architecture
+- AI Engine
+- Execution Pipeline
+- Conversation Memory
+- Streaming Responses
+
+### Planned Enhancements
+
+- Workflow orchestration
+- Tool Calling
+- LangGraph integration
+
+---
+
+## Knowledge Processing
+
+### Completed
+
+- Document Upload
+- PDF Parsing
+- DOCX Parsing
+- TXT Parsing
+- Markdown Parsing
+
+### Planned
+
+- PPTX Support
+- OCR
+- Additional document formats
 
 ---
 
 ## Retrieval
 
+Planned capabilities include:
+
 - Embeddings
-- ChromaDB
-- Semantic Search
+- Vector Database
+- Semantic Retrieval
 - Retrieval Pipeline
-- RAG
+- Retrieval-Augmented Generation (RAG)
 
 ---
 
 ## Intelligence
 
+The platform should support:
+
 - LangGraph
 - Tool Calling
 - Workflow Routing
+- Multi-Agent Systems
+- Autonomous Reasoning
 
 ---
 
 ## API
 
-- Production-ready FastAPI backend
-- Swagger documentation
+The backend should provide:
+
+- Production-ready FastAPI architecture
+- Stable REST APIs
+- Streaming endpoints
 - Clean modular architecture
+- Extensible provider integration
 
 ---
 
 # Future Backlog
 
-These ideas are intentionally postponed until Version 1 is stable.
+The following ideas are intentionally deferred until Version 1 reaches feature completeness.
 
-## AI
+---
+
+## AI Platform
 
 - Intelligent Provider Routing
 - Prompt Registry
 - Prompt Versioning
 - Dynamic Prompt Loading
-- Benchmark Endpoint
 - AI Analytics Dashboard
 - Token Usage Tracking
 - Cost Tracking
 - Latency Tracking
+- Benchmark APIs
 
 ---
 
-## Tools
+## Additional AI Capabilities
 
 - OCR
 - Speech-to-Text
 - Text-to-Speech
 - Vision Models
+- Image Understanding
+- Multimodal Workflows
 
 ---
 
-## Integrations
+## Infrastructure
 
 - Redis
 - PostgreSQL
 - Elasticsearch
-- S3 Storage
+- Object Storage (S3 Compatible)
+- Distributed Memory
+- Distributed Vector Storage
 
 ---
 
@@ -529,55 +403,59 @@ These ideas are intentionally postponed until Version 1 is stable.
 - Legal Assistant
 - Education Assistant
 - Enterprise Knowledge Assistant
+- Business Intelligence Assistant
+
+---
+
+# Engineering Workflow
+
+Every milestone follows the same development philosophy:
+
+1. Architecture & Design
+2. Implementation
+3. Testing
+4. Stable Git Commit
+5. Documentation Update
+
+Only thoroughly tested and stable milestones are considered complete.
 
 ---
 
 # Engineering Philosophy
 
-The roadmap is intentionally adaptive.
+The roadmap is intentionally adaptive rather than rigid.
 
-Good architecture takes priority over following a fixed plan.
+Good architecture always takes priority over following a predefined schedule.
 
-If a better design is discovered during development, milestones may be reordered before implementation.
+If a better engineering solution is discovered during development, milestones may be reordered or expanded before implementation, provided that the overall architectural direction remains consistent.
 
-Every milestone follows the same engineering workflow.
+Every milestone is expected to deliver:
 
-```
-Architecture
-
-↓
-
-Implementation
-
-↓
-
-Testing
-
-↓
-
-Git Commit
-
-↓
-
-Documentation Update
-```
-
-Only tested and stable milestones are considered complete.
+- A stable implementation
+- Production-quality code
+- Updated documentation
+- Clear separation of responsibilities
+- Minimal technical debt
 
 ---
 
 # Long-Term Vision
 
-The long-term objective is to evolve Modular AI Engine from a reusable AI backend into a complete AI reasoning platform.
+The long-term objective is to evolve **Modular AI Engine** from a reusable AI backend into a complete AI reasoning platform.
 
-The final system should support
+The final system should support:
 
 - Multiple AI providers
-- Retrieval-Augmented Generation
+- Retrieval-Augmented Generation (RAG)
 - Workflow orchestration
-- Memory
+- Conversation memory
 - Tool execution
 - Autonomous agents
+- Intelligent routing
+- Multi-agent collaboration
 - Domain-specific copilots
+- Scalable AI execution
 
-while maintaining a clean, modular and extensible architecture.
+while maintaining a clean, modular, extensible, and provider-independent architecture.
+
+The architecture is intentionally designed so that each new capability can be integrated incrementally without requiring major changes to the existing system.

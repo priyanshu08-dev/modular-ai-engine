@@ -4,31 +4,23 @@
 
 ---
 
-## Overview
+# Overview
 
-**Modular AI Engine** is a reusable AI backend built with modern AI engineering principles.
+**Modular AI Engine** is a reusable AI backend built using modern AI engineering principles.
 
-Unlike traditional chatbot applications, this project is designed as an **AI platform** that can serve as the reasoning layer for different products and industries.
+Unlike traditional chatbot applications, this project is designed as an **AI execution platform** that serves as the reasoning layer for multiple products and industries.
 
-Possible applications include:
+Rather than coupling AI capabilities directly into an application, Modular AI Engine provides a clean, extensible backend that can evolve independently while exposing a stable API to client applications.
 
-* 🏥 Healthcare assistants
-* 🎓 Educational platforms
-* 📚 Research copilots
-* ⚖️ Legal assistants
-* 🏢 Enterprise AI systems
-* 📈 Business intelligence
-* 🤖 Domain-specific AI copilots
-
-The goal is to build a backend that remains independent of any single application while supporting multiple AI providers, Retrieval-Augmented Generation (RAG), workflow orchestration, and future AI capabilities.
+The architecture is intentionally modular, allowing new AI capabilities to be added without requiring major changes to the surrounding application.
 
 ---
 
-# Project Vision
+# Why This Project Exists
 
-Traditional AI applications are often tightly coupled to a single model or use case.
+Most AI applications today are tightly coupled to a specific Large Language Model (LLM), provider, or business workflow.
 
-Example:
+A typical architecture looks like this:
 
 ```text
 User
@@ -40,125 +32,105 @@ API
 LLM
 ```
 
-This project follows a different philosophy.
+While this approach works for simple chatbots, it becomes difficult to maintain as applications grow.
 
-Instead of building another chatbot, we are building an **AI execution platform**.
+Adding capabilities such as:
 
-Current architecture:
+- Conversation Memory
+- Streaming Responses
+- Retrieval-Augmented Generation (RAG)
+- Tool Calling
+- Workflow Orchestration
+- Multi-Agent Systems
 
-```text
-Client
-   │
-   ▼
-FastAPI
-   │
-   ▼
-API Layer
-   │
-   ▼
-Service Layer
-   │
-   ▼
-AI Engine
-   │
-   ▼
-Provider Factory
-   │
-   ▼
-LLM Provider
-```
+often requires significant architectural changes.
 
-As the project evolves, additional capabilities such as memory, RAG, LangGraph, and tools will plug into the AI Engine without changing the API layer.
+Modular AI Engine follows a different philosophy.
+
+Instead of building another chatbot, it provides a reusable AI execution platform capable of powering many different applications through a stable and extensible architecture.
 
 ---
 
-# Current Features
+# Potential Applications
+
+The engine is designed to support AI-powered applications across multiple domains, including:
+
+- 🏥 Healthcare Assistants
+- 🎓 Educational Platforms
+- 📚 Research Copilots
+- ⚖️ Legal Assistants
+- 🏢 Enterprise AI Systems
+- 📈 Business Intelligence
+- 🤖 Domain-Specific AI Copilots
+- 🧠 Personal AI Assistants
+
+---
+
+# Key Features
 
 ## Backend
 
-* FastAPI
-* Application Factory pattern
-* Environment-based configuration
-* Health endpoint
-* Swagger API documentation
+- FastAPI backend
+- Application Factory pattern
+- Environment-based configuration
+- Health monitoring endpoint
+- Interactive Swagger API documentation
 
 ---
 
-## AI
+## AI Engine
 
-- AI Engine orchestration layer
-- Modular Execution Pipeline
+- Modular AI execution engine
+- Execution Pipeline architecture
+- Provider abstraction layer
 - Conversation Memory
 - Streaming Responses
-- Server-Sent Events
-- MemoryManager
-- LangChain message-based execution
-- Conversation ID support
-- Provider abstraction
-- Multi-provider architecture
+- Server-Sent Events (SSE)
 - LangChain integration
-- Groq integration
-
-The AI Engine now supports stateful multi-turn conversations through a modular memory subsystem. Conversation history is represented using LangChain messages, enabling future capabilities such as Streaming, Retrieval-Augmented Generation (RAG), Tool Calling, and LangGraph workflows without changing the API layer.
-
----
-
-## Providers
-
-Current:
-
-* ✅ Groq
-
-Planned:
-
-* OpenAI
-* Gemini
+- Conversation ID support
+- Provider-independent architecture
 
 ---
 
-## API
+## Document Processing
 
-Implemented endpoints:
+Currently supports:
+
+- Document Upload API
+- PDF parsing
+- DOCX parsing
+- TXT parsing
+- Markdown parsing
+- MIME type detection
+- Automatic metadata extraction
+- UUID-based upload storage
+
+---
+
+## Provider Support
+
+### Currently Supported
+
+- ✅ Groq
+
+### Planned
+
+- OpenAI
+- Gemini
+
+---
+
+# API Endpoints
+
+Current endpoints:
 
 ```text
 GET  /health
 
 POST /chat
+
+POST /documents/parse
 ```
-
----
-
-## Configuration
-
-* Environment variable management
-* Pydantic Settings
-* Provider configuration through `.env`
-
----
-
-# Current Project Structure
-
-```text
-backend/
-
-app/
-│
-├── api/
-├── config/
-├── engine/
-│   ├── pipeline/
-│   │   └── steps/
-│   ├── execution_context.py
-│   ├── core.py
-│   └── prompt_manager.py
-├── providers/
-├── schemas/
-├── services/
-│
-└── main.py
-```
-
-The `engine` package contains the core reasoning components, including the AI Engine, Execution Pipeline, and shared execution context.
 
 ---
 
@@ -166,258 +138,174 @@ The `engine` package contains the core reasoning components, including the AI En
 
 ## Backend
 
-* Python 3.14
-* FastAPI
-* Uvicorn
+- Python 3.14
+- FastAPI
+- Uvicorn
 
 ## AI
 
-* LangChain
+- LangChain
 
-## Planned
+## Planned AI Technologies
 
-* LangGraph
-* ChromaDB
+- LangGraph
+- ChromaDB
 
 ## Dependency Management
 
-* uv
-* pyproject.toml
+- uv
+- pyproject.toml
 
 ---
 
-# Current Architecture
+# Project Structure
 
 ```text
-Client
+app/
 
-↓
-
-FastAPI
-
-↓
-
-API Router
-
-↓
-
-Chat Service
-
-↓
-
-AI Engine
-
-↓
-
-Execution Pipeline
-
-↓
-
-Memory Step
-
-↓
-
-Provider Step
-        │
-        ├── execute()
-        └── stream()
-
-↓
-
-Provider
-
-↓
-
-LLM
+├── api/
+├── config/
+├── document/
+├── engine/
+├── providers/
+├── schemas/
+├── services/
+└── main.py
 ```
 
-The Execution Pipeline now manages both conversation memory and provider execution while remaining fully modular.
+The project follows a layered architecture with clearly separated responsibilities, enabling the AI Engine to evolve independently from the API and application layers.
 
-## Request Flow
+Complete architectural documentation is available in **PROJECTGUIDE.md**.
+
+---
+
+# Getting Started
+
+## Clone the Repository
+
+```bash
+git clone <repository-url>
+cd modular-ai-engine
+```
+
+---
+
+## Install Dependencies
+
+```bash
+uv sync
+```
+
+---
+
+## Configure Environment
+
+Create a `.env` file in the project root.
+
+Example:
+
+```env
+LLM_PROVIDER=groq
+GROQ_API_KEY=your_api_key
+```
+
+---
+
+## Run the Development Server
+
+```bash
+uv run uvicorn app.main:app --reload
+```
+
+---
+
+## API Documentation
+
+After starting the server:
+
+Swagger UI
 
 ```text
-Client
-
-↓
-
-FastAPI
-
-↓
-
-ChatService
-
-↓
-
-AIEngine
-
-↓
-
-ExecutionPipeline
-
-↓
-
-MemoryStep
-
-↓
-
-ProviderStep
-
-↓
-
-ProviderFactory
-
-↓
-
-Configured Provider
-
-↓
-
-LLM
-
-↓
-
-StreamingResponse
+http://127.0.0.1:8000/docs
 ```
 
-## Current Capabilities
+ReDoc
 
-- Real-time streaming AI responses
-- Provider-independent streaming
-- Conversation-aware streaming
-- SSE protocol
-
-# Conversation Memory
-
-The Modular AI Engine now supports stateful conversations through a dedicated memory subsystem.
-
-Each conversation is identified using a unique `conversation_id`.
-
-The execution pipeline automatically retrieves previous conversation history, constructs the LangChain message list, invokes the configured provider, and stores the updated conversation.
-
-This architecture keeps the AI Engine lightweight while allowing future memory implementations such as Redis, PostgreSQL, Vector Stores, or LangGraph State to replace the in-memory implementation without changing the engine.
-
-
-
-# Development Principles
-
-The project follows a small set of engineering principles.
-
-* Build an AI platform instead of a chatbot.
-* Keep responsibilities separated.
-* Depend on abstractions instead of implementations.
-* Build incrementally through stable milestones.
-* Avoid unnecessary abstractions.
-* Create files only when they provide real architectural value.
+```text
+http://127.0.0.1:8000/redoc
+```
 
 ---
 
-# Roadmap
+# Current Status
 
-### Completed
+**Version**
 
-- ✅ Project Initialization
-- ✅ FastAPI Foundation
-- ✅ AI Chat Integration
-- ✅ Provider Abstraction
-- ✅ AI Engine
-- ✅ Project Documentation
-- ✅ Execution Pipeline
-- ✅ Conversation Memory & LangChain Message Pipeline
+```
+v0.6.0
+```
 
+**Status**
 
-### Planned
+🚧 Active Development
 
-* Document Upload
-* Document Parsing
-* Embeddings
-* ChromaDB Integration
-* Retrieval Pipeline
-* Retrieval-Augmented Generation (RAG)
-* LangGraph Integration
-* Tool Calling
-* Multi-Agent Workflows
-* Production Hardening
+The foundational architecture of the Modular AI Engine has been established, including:
 
----
+- Modular AI Engine
+- Execution Pipeline
+- Conversation Memory
+- Streaming Responses
+- Provider Abstraction
+- Document Processing
 
-# Current Progress
+Future development focuses on expanding AI capabilities while preserving the existing architecture.
 
-Overall project completion:
-
-~48%
-
-The foundational architecture of the Modular AI Engine has been established, including the AI Engine, modular Execution Pipeline, provider abstraction, and project documentation.
-
-Future milestones focus on expanding AI capabilities—such as Conversation Memory, Retrieval-Augmented Generation (RAG), Streaming, Tool Calling, and LangGraph—without requiring significant architectural changes.
+For detailed project progress and milestone tracking, see **ROADMAP.md**.
 
 ---
 
 # Documentation
 
-Project documentation:
+Project documentation is organized into dedicated documents, each with a specific responsibility.
 
-* README.md
-* ARCHITECTURE.md
-* PROJECTGUIDE.md
-* ROADMAP.md
-* CHANGELOG.md
+| Document | Purpose |
+|----------|---------|
+| **README.md** | Project overview, features, setup, and quick start |
+| **PROJECTGUIDE.md** | Complete technical handbook covering architecture, request flows, component responsibilities, engineering principles, and extension points |
+| **ROADMAP.md** | Project planning, milestones, progress, future objectives, and long-term development strategy |
+| **CHANGELOG.md** | Chronological history of completed milestones, architectural changes, and released features |
 
-Documentation evolves alongside the codebase. Every completed milestone includes synchronized updates to architecture, implementation guides, roadmap, and change history to keep the project documentation accurate and maintainable.
+This separation keeps the documentation maintainable while avoiding duplication between documents.
 
 ---
 
 # Long-Term Vision
 
-The long-term objective is to evolve this project from an AI backend into a complete AI reasoning platform capable of:
+The long-term objective is to evolve Modular AI Engine from a reusable AI backend into a complete AI reasoning platform capable of supporting:
 
-* Multi-provider support
-* Retrieval-Augmented Generation (RAG)
-* Workflow orchestration
-* Tool calling
-* Multi-agent systems
-* Domain-specific copilots
-* Intelligent request routing
-* Scalable AI execution
+- Multiple AI providers
+- Retrieval-Augmented Generation (RAG)
+- Workflow orchestration
+- Tool Calling
+- Multi-Agent Systems
+- Intelligent request routing
+- Domain-specific copilots
+- Scalable AI execution
 
-The architecture is intentionally designed so these capabilities can be added without major changes to the existing codebase.
-
----
-
-# Execution Pipeline
-
-The AI Engine follows a modular execution pipeline where each stage is responsible for a single aspect of AI request processing.
-
-```text
-ExecutionContext
-
-↓
-
-ExecutionPipeline
-
-↓
-
-PromptStep
-
-↓
-
-ProviderStep
-
-↓
-
-AI Response
-```
-
-This design keeps the AI Engine lightweight while allowing future capabilities such as Conversation Memory, Retrieval-Augmented Generation (RAG), Tool Calling, Streaming, and LangGraph orchestration to be added without modifying the core engine.
+The architecture is intentionally designed so these capabilities can be introduced incrementally without major changes to the existing codebase.
 
 ---
 
-# Project Status
+# Contributing
 
-🚧 Active Development
+The project follows a milestone-based engineering workflow focused on producing stable, production-quality software.
 
-The project is under active development and follows a milestone-based workflow where each completed milestone produces:
+Contributors are encouraged to review **PROJECTGUIDE.md** before making architectural or structural changes to ensure consistency with the project's engineering principles.
 
-* Working code
-* Tested functionality
-* Stable Git commit
-* Updated documentation
+---
+
+# License
+
+This project is currently under active development.
+
+License information will be added before the first stable release.

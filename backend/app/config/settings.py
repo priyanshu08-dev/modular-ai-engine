@@ -18,6 +18,13 @@ class Settings(BaseSettings):
 
     GEMINI_API_KEY: str = ""
 
+    # ==========================
+    # Document Settings
+    # ==========================
+
+    MAX_DOCUMENT_SIZE_MB: int = 25
+
+
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",
@@ -29,7 +36,6 @@ class Settings(BaseSettings):
 def get_settings() -> Settings:
     """
     Returns a cached Settings instance.
-    The .env file is read only once during application startup.
     """
     return Settings()
 
