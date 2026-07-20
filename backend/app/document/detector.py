@@ -35,8 +35,6 @@ class DocumentDetector:
     ) -> DocumentType:
         
 
-        file_size = file_path.stat().st_size
-
         # -------------------------
         # File existence
         # -------------------------
@@ -45,10 +43,13 @@ class DocumentDetector:
             raise InvalidDocumentError(
                 f"Document '{file_path}' does not exist."
             )
+        
+        file_size = file_path.stat().st_size
 
         # -------------------------
         # Empty file
         # -------------------------
+
 
         if file_size == 0:
             raise InvalidDocumentError(

@@ -22,6 +22,18 @@ class DocumentMetadata:
 
 @dataclass(slots=True)
 class Document:
+    """
+    Standardized representation of a parsed document.
+
+    This model becomes the canonical input for all downstream
+    processing pipelines including chunking, embeddings,
+    retrieval, and RAG.
+    """
+
+    document_id: str
+
     document_type: DocumentType
+
     content: str
+
     metadata: DocumentMetadata

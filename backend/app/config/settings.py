@@ -24,6 +24,25 @@ class Settings(BaseSettings):
 
     MAX_DOCUMENT_SIZE_MB: int = 25
 
+    # ==========================
+    # Chunking Settings
+    # ==========================
+
+    CHUNK_SIZE: int = 100
+    CHUNK_OVERLAP: int = 20
+    KEEP_SEPARATOR: bool = True
+    IS_SEPARATOR_REGEX: bool = False
+    CHUNK_SEPARATORS: list[str] = [
+        "\n\n",
+        "\n",
+        ". ",
+        "! ",
+        "? ",
+        "; ",
+        ", ",
+        " ",
+        "",
+    ]
 
     model_config = SettingsConfigDict(
         env_file=".env",

@@ -28,33 +28,33 @@ The roadmap is intentionally adaptive. As the architecture evolves, milestones m
 
 ## Current Milestone
 
-⏳ **M11 — Chunking Pipeline**
+⏳ **M12 — Embedding Generation**
 
 ## Last Completed Milestone
 
-✅ **M10 — Document Upload & Processing**
+✅ **M11 — Chunking Pipeline**
 
 ---
 
 # Overall Progress
 
 ```text
-█████████████░░░░░░░
+██████████████░░░░░░░
 
 Phase Progress
 
 Phase 1  ✅ 100%
 Phase 2  ✅ 100%
-Phase 3  ✅ 20%
+Phase 3  ✅ 40%
 Phase 4  ⬜ 0%
 Phase 5  ⬜ 0%
 
-Overall Project ≈ 63%
+Overall Project ≈ 68%
 ```
 
-The foundational architecture of the Modular AI Engine has been established.
+The foundational architecture of the Modular AI Engine now includes a complete document preparation pipeline consisting of document parsing and retrieval-ready chunk generation.
 
-The remaining work primarily focuses on expanding AI capabilities—including knowledge retrieval, reasoning, orchestration, tooling, and production readiness—without requiring major architectural restructuring.
+Future development focuses on embedding generation, vector storage, semantic retrieval, orchestration, tooling, and production readiness while preserving the existing modular architecture.
 
 ---
 
@@ -112,21 +112,29 @@ Enable the AI Engine to understand, retrieve, and reason over uploaded knowledge
 
 **Status**
 
-⏳ Next
+✅ Completed
 
-### Objectives
+### Delivered
 
 - Chunk domain model
-- ChunkManager
-- Recursive text splitting
+- ChunkManager orchestration layer
+- Recursive chunking using LangChain RecursiveCharacterTextSplitter
+- Strategy Pattern for pluggable chunking algorithms
+- ChunkingResult abstraction
 - Configurable chunk size
 - Configurable chunk overlap
-- Metadata inheritance
-- Chunk validation
+- Configurable separator hierarchy
+- Chunk-specific metadata model
+- End-to-end document-to-chunk processing pipeline
+- Integration testing via playground
 
 ---
 
-## M12 — Embeddings
+## M12 — Embedding Generation
+
+**Status**
+
+⏳ Next
 
 ### Objectives
 
@@ -309,6 +317,8 @@ The first stable release should provide a production-grade modular AI backend ca
 - DOCX Parsing
 - TXT Parsing
 - Markdown Parsing
+- Standardized Document Model
+- Recursive Chunking Pipeline
 
 ### Planned
 
@@ -320,7 +330,12 @@ The first stable release should provide a production-grade modular AI backend ca
 
 ## Retrieval
 
-Planned capabilities include:
+### Completed
+
+- Retrieval-ready document chunking
+- Chunk orchestration pipeline
+
+### Planned
 
 - Embeddings
 - Vector Database

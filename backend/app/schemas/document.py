@@ -25,6 +25,8 @@ class DocumentResponse(BaseModel):
         from_attributes=True,
     )
 
+    document_id: str
+    
     document_type: str
 
     content: str

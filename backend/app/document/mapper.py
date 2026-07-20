@@ -16,6 +16,7 @@ class DocumentMapper:
     ) -> DocumentResponse:
 
         return DocumentResponse(
+            document_id=document.document_id,
             document_type=document.document_type.value,
             content=document.content,
             metadata=DocumentMetadataResponse(

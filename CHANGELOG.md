@@ -461,6 +461,99 @@ without requiring significant changes to the existing document processing archit
 
 ---
 
+
+## Milestone 11 — Chunking Pipeline
+
+### Added
+
+#### Chunking Subsystem
+
+* Chunking module.
+* ChunkManager orchestration layer.
+* Chunk domain model.
+* ChunkMetadata model.
+* ChunkingResult model.
+* BaseChunkingStrategy abstraction.
+* RecursiveChunkingStrategy implementation.
+* SemanticChunkingStrategy placeholder for future semantic chunking.
+
+#### Chunking Features
+
+* Recursive document chunking using LangChain RecursiveCharacterTextSplitter.
+* Configurable chunk size.
+* Configurable chunk overlap.
+* Configurable separator hierarchy.
+* Configurable separator preservation.
+* Retrieval-ready chunk generation.
+
+#### Testing
+
+* End-to-end chunking playground for validating document-to-chunk processing.
+
+### Changed
+
+* Extended the Document model with globally unique document identifiers.
+* Updated the document parsing workflow to generate document IDs automatically.
+* Standardized chunking output through the ChunkingResult abstraction.
+* Updated document schemas and mappers to expose document identifiers.
+
+### Improved
+
+* Established a complete document-to-chunk processing pipeline.
+* Decoupled document parsing from text chunking.
+* Standardized downstream interfaces for future embedding and retrieval pipelines.
+* Improved extensibility through a pluggable chunking architecture based on the Strategy Pattern.
+
+### Refactored
+
+* Separated document-level metadata from chunk-level metadata.
+* Simplified chunk orchestration by centralizing workflow coordination within ChunkManager.
+* Refined the chunking architecture to support interchangeable chunking strategies.
+
+### Removed
+
+* Removed the planned splitter wrapper abstraction in favor of a cleaner Strategy Pattern implementation.
+* Removed temporary token count estimation from the Chunk model pending provider-specific tokenization during the Embedding milestone.
+
+### Fixed
+
+* Resolved constructor mismatches introduced during model refactoring.
+* Updated chunk generation logic to align with the finalized Chunk domain model.
+* Verified end-to-end chunk generation through integration testing.
+
+### Architecture Impact
+
+The project now includes a complete retrieval preparation pipeline.
+
+```
+Upload File
+      │
+      ▼
+Document Parsing
+      │
+      ▼
+Document
+      │
+      ▼
+ChunkManager
+      │
+      ▼
+Chunking Strategy
+      │
+      ▼
+Chunk[]
+      │
+      ▼
+ChunkingResult
+```
+
+The chunking subsystem operates entirely on standardized Document objects, remaining independent of file formats and parsing implementations.
+
+This milestone establishes the architectural foundation required for embedding generation, vector database integration, semantic retrieval, and Retrieval-Augmented Generation (RAG) while preserving the project's modular, provider-independent design.
+
+---
+
+
 # Summary
 
 ## Versions Included
@@ -476,6 +569,7 @@ without requiring significant changes to the existing document processing archit
 * ✅ M8 — Conversation Memory & LangChain Message Pipeline
 * ✅ M9 — Streaming Responses
 * ✅ M10 — Document Upload & Processing
+* ✅ M11 — Chunking Pipeline
 
 ---
 

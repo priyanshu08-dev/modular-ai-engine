@@ -104,6 +104,11 @@ Currently supports:
 - MIME type detection
 - Automatic metadata extraction
 - UUID-based upload storage
+- Standardized document representation
+- Recursive document chunking
+- Configurable chunk size and overlap
+- Configurable separator hierarchy
+- Retrieval-ready chunk generation
 
 ---
 
@@ -145,6 +150,7 @@ POST /documents/parse
 ## AI
 
 - LangChain
+- LangChain Text Splitters
 
 ## Planned AI Technologies
 
@@ -164,6 +170,7 @@ POST /documents/parse
 app/
 
 ├── api/
+├── chunking/
 ├── config/
 ├── document/
 ├── engine/
@@ -249,7 +256,7 @@ v0.6.0
 
 🚧 Active Development
 
-The foundational architecture of the Modular AI Engine has been established, including:
+The foundational architecture of the Modular AI Engine now includes:
 
 - Modular AI Engine
 - Execution Pipeline
@@ -257,8 +264,9 @@ The foundational architecture of the Modular AI Engine has been established, inc
 - Streaming Responses
 - Provider Abstraction
 - Document Processing
+- Recursive Chunking Pipeline
 
-Future development focuses on expanding AI capabilities while preserving the existing architecture.
+The engine now supports a complete document preparation workflow that transforms uploaded documents into retrieval-ready chunks, establishing the foundation for upcoming embedding generation, vector database integration, and Retrieval-Augmented Generation (RAG).
 
 For detailed project progress and milestone tracking, see **ROADMAP.md**.
 
@@ -284,7 +292,7 @@ This separation keeps the documentation maintainable while avoiding duplication 
 The long-term objective is to evolve Modular AI Engine from a reusable AI backend into a complete AI reasoning platform capable of supporting:
 
 - Multiple AI providers
-- Retrieval-Augmented Generation (RAG)
+- Retrieval-Augmented Generation (RAG) built on the completed document parsing and chunking pipeline
 - Workflow orchestration
 - Tool Calling
 - Multi-Agent Systems

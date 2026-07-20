@@ -67,41 +67,46 @@ The surrounding application remains largely unchanged while the execution engine
 The current architecture separates application concerns into independent layers.
 
 ```text
-Client
-   │
-   ▼
-FastAPI
-   │
-   ▼
-API Layer
-   │
-   ▼
-Service Layer
-   │
-   ▼
-AI Engine
-   │
-   ▼
-Execution Pipeline
-   │
-   ▼
-Provider Layer
-   │
-   ▼
-LLM
+                    Client
+                       │
+                       ▼
+                    FastAPI
+                       │
+                       ▼
+                   API Layer
+                       │
+                       ▼
+                 Service Layer
+                ┌────────┴────────┐
+                ▼                 ▼
+           AI Engine      Document Processing
+                │                 │
+                ▼                 ▼
+      Execution Pipeline      Chunking
+                │                 │
+                └────────┬────────┘
+                         ▼
+                  Provider Layer
+                         │
+                         ▼
+                         LLM
 ```
 
 Each layer owns a single responsibility.
 
 The API layer never performs AI reasoning.
 
-The Service layer never communicates directly with providers.
+The Service layer coordinates business workflows without embedding implementation details.
 
-The AI Engine never knows which provider is currently active.
+The AI Engine orchestrates conversational reasoning while remaining provider-independent.
 
-Providers never contain business logic.
+The Document Processing subsystem transforms uploaded files into standardized `Document` objects.
 
-This separation allows every subsystem to evolve independently while maintaining stable interfaces between layers.
+The Chunking subsystem converts standardized documents into retrieval-ready chunks without depending on file formats or parsing implementations.
+
+Providers remain responsible only for communicating with external AI services.
+
+This separation enables every subsystem to evolve independently while preserving stable interfaces across the application.
 
 ---
 
@@ -290,54 +295,54 @@ Instead, streaming and synchronous execution share nearly identical orchestratio
 
 # Document Processing Lifecycle
 
-The document subsystem follows its own independent workflow.
+The document subsystem follows an independent processing workflow that converts uploaded files into standardized domain objects before any downstream knowledge-processing occurs.
 
 ```text
 Client
-        │
-        ▼
+    │
+    ▼
 Document API
-        │
-        ▼
+    │
+    ▼
 DocumentService
-        │
-        ▼
+    │
+    ▼
 DocumentStorage
-        │
-        ▼
+    │
+    ▼
 DocumentManager
-        │
-        ▼
+    │
+    ▼
 DocumentDetector
-        │
-        ▼
+    │
+    ▼
 DocumentParserFactory
-        │
-        ▼
+    │
+    ▼
 BaseDocumentParser
-        │
-        ▼
+    │
+    ▼
 Concrete Parser
 (PDF / DOCX / TXT / Markdown)
-        │
-        ▼
-Document Domain Model
-        │
-        ▼
-DocumentMapper
-        │
-        ▼
-API Response
+    │
+    ▼
+Document
+    │
+    ▼
+ChunkManager
+    │
+    ▼
+Chunking Strategy
+    │
+    ▼
+ChunkingResult
 ```
 
-This layered design isolates storage, detection, parsing, and response mapping into independent components.
+The parsing subsystem and the chunking subsystem remain independent.
 
-Adding support for a new document type should require only:
+Document Processing is responsible only for producing standardized `Document` objects.
 
-1. Creating a new parser.
-2. Registering it in the parser factory.
-
-No other component should require modification.
+The Chunking subsystem operates exclusively on those domain objects to generate retrieval-ready chunks for future embedding and retrieval pipelines.
 
 ---
 
@@ -346,23 +351,32 @@ No other component should require modification.
 The project currently consists of several independent but cooperating subsystems.
 
 ```text
-                   Modular AI Engine
-                           │
-      ┌────────────────────┼────────────────────┐
-      │                    │                    │
-      ▼                    ▼                    ▼
- API Layer            AI Engine          Document System
-      │                    │                    │
-      ▼                    ▼                    ▼
- Service Layer     Execution Pipeline    DocumentManager
-      │                    │                    │
-      ▼                    ▼                    ▼
- Schemas          Memory / Providers     Storage / Parsers
+                           Modular AI Engine
+                                   │
+      ┌────────────────────────────┼────────────────────────────┐
+      │                            │                            │
+      ▼                            ▼                            ▼
+ API Layer                   AI Engine              Document Processing
+      │                            │                            │
+      ▼                            ▼                            ▼
+Service Layer            Execution Pipeline         DocumentManager
+      │                            │                            │
+      ▼                            ▼                            ▼
+ Schemas               Memory / Providers          Chunking Pipeline
+                                                     │
+                                                     ▼
+                                                Retrieval Foundation
 ```
 
-Each subsystem has a clearly defined boundary and communicates through stable interfaces rather than direct implementation dependencies.
+Each subsystem owns a clearly defined architectural boundary.
 
-This architectural separation enables the platform to continue growing while keeping the codebase understandable, maintainable, and extensible.
+The AI Engine is responsible for reasoning and orchestration.
+
+The Document Processing subsystem is responsible for knowledge ingestion.
+
+The Chunking subsystem forms the bridge between document ingestion and future retrieval capabilities such as embeddings, vector databases, semantic search, and Retrieval-Augmented Generation (RAG).
+
+Stable interfaces between these subsystems allow future capabilities to be added through extension rather than modification.
 
 ---
 
@@ -385,9 +399,21 @@ As future milestones introduce capabilities such as:
 
 the AI Engine should require minimal structural changes.
 
-Most new functionality will integrate by extending existing abstractions—such as adding new pipeline steps, providers, memory implementations, document processors, or retrieval components—rather than rewriting existing code.
+Most new functionality will integrate by extending existing abstractions rather than rewriting existing components.
 
-This philosophy is the foundation upon which every architectural decision in the Modular AI Engine is built.
+Examples include:
+
+- New PipelineSteps
+- Additional Provider implementations
+- New Memory backends
+- Additional Document parsers
+- New Chunking strategies
+- Embedding providers
+- Retrieval engines
+- Tool execution
+- Workflow orchestration
+
+The introduction of the Chunking subsystem reinforces this philosophy by separating document ingestion from retrieval preparation. Future retrieval capabilities will build upon standardized chunks without requiring modifications to either the document processing pipeline or the AI Engine.
 
 
 # 2. Project Structure
@@ -402,6 +428,12 @@ Current project structure:
 app/
 │
 ├── api/
+├── chunking/
+│   ├── strategies/
+│   ├── manager.py
+│   ├── models.py
+│   └── exceptions.py
+│
 ├── config/
 ├── document/
 ├── engine/
@@ -429,29 +461,34 @@ The backend is organized into multiple logical layers.
 
 ```text
 Client
-        │
-        ▼
+   │
+   ▼
 FastAPI
-        │
-        ▼
+   │
+   ▼
 API Layer
-        │
-        ▼
+   │
+   ▼
 Service Layer
-        │
-        ▼
-AI Engine
-        │
-        ▼
-Providers
-        │
-        ▼
+   │
+   ├──────────────┐
+   ▼              ▼
+AI Engine   Document Processing
+   │              │
+   ▼              ▼
+Execution     Chunking
+Pipeline         │
+   │             ▼
+   ▼       Retrieval Foundation
+Provider
+   │
+   ▼
 External AI Services
 ```
 
-Each layer communicates only with the layer directly beneath it.
+Each layer communicates only with the layer directly beneath or the subsystem it owns.
 
-This prevents circular dependencies and keeps the architecture maintainable.
+This structure preserves clear dependency direction while enabling the document ingestion and AI reasoning pipelines to evolve independently.
 
 ---
 
@@ -765,6 +802,68 @@ The document subsystem is intentionally modular so that additional document form
 
 ---
 
+## chunking/
+
+### Purpose
+
+Provide a provider-independent document chunking subsystem.
+
+The chunking package transforms standardized `Document` domain objects into retrieval-ready chunks that can be consumed by future embedding generation, vector databases, semantic retrieval, and Retrieval-Augmented Generation (RAG).
+
+By isolating chunking from document parsing, the project preserves a clean separation between knowledge ingestion and knowledge preparation.
+
+---
+
+### Responsibilities
+
+* Coordinate document chunking
+* Apply configurable chunking strategies
+* Generate standardized Chunk domain models
+* Preserve document metadata across chunks
+* Produce retrieval-ready output
+* Support future chunking algorithms
+
+The chunking subsystem never parses uploaded files.
+
+It operates exclusively on standardized `Document` objects produced by the Document Processing subsystem.
+
+---
+
+### Internal Structure
+
+```text
+chunking/
+
+├── manager.py
+├── models.py
+├── exceptions.py
+└── strategies/
+    ├── base.py
+    ├── recursive.py
+    └── semantic.py
+```
+
+The package follows a modular architecture where orchestration, domain models, and chunking algorithms remain independent.
+
+---
+
+### Design Philosophy
+
+Rather than embedding chunking logic into the document processing pipeline, chunk generation is treated as its own architectural concern.
+
+This separation provides several advantages:
+
+* Parser independence
+* Strategy-based extensibility
+* Easier testing
+* Cleaner retrieval pipeline
+* Future semantic chunking support
+* Provider-independent preprocessing
+
+As future milestones introduce embeddings and retrieval, the chunking subsystem should require little or no structural modification.
+
+---
+
 ## schemas/
 
 ### Purpose
@@ -784,6 +883,159 @@ Schemas represent the public interface of the application.
 Schemas should never contain business logic.
 
 Their responsibility is limited to describing data entering and leaving the application.
+
+---
+
+# ChunkManager
+
+## Purpose
+
+ChunkManager coordinates the complete chunk generation workflow.
+
+Instead of embedding splitting logic throughout the application, it centralizes orchestration while delegating the actual chunking algorithm to interchangeable strategies.
+
+---
+
+## Responsibilities
+
+* Receive standardized Document objects
+* Select the configured chunking strategy
+* Coordinate chunk generation
+* Build ChunkingResult
+* Preserve document metadata
+* Return retrieval-ready chunks
+
+ChunkManager does not implement any chunking algorithm itself.
+
+Its responsibility is orchestration rather than execution.
+
+---
+
+# Chunk Domain Model
+
+## Purpose
+
+Chunking converts a single Document into multiple standardized Chunk objects.
+
+Conceptually:
+
+```text
+Document
+
+      │
+
+      ▼
+
+Chunk 1
+Chunk 2
+Chunk 3
+Chunk 4
+...
+```
+
+Every Chunk represents a small, self-contained portion of the original document while preserving sufficient metadata to reconstruct its origin.
+
+Current chunk metadata includes:
+
+* Chunk identifier
+* Document identifier
+* Chunk index
+* Character offsets
+* Chunk content
+
+Future metadata may include:
+
+* Token count
+* Page number
+* Section hierarchy
+* Heading information
+* Semantic score
+* Embedding identifier
+
+Standardizing chunk metadata allows future retrieval systems to operate consistently regardless of document format.
+
+---
+
+# ChunkingResult
+
+## Purpose
+
+Provide a standardized return object for the chunking subsystem.
+
+Rather than returning raw collections of chunks, every chunking operation produces a ChunkingResult.
+
+---
+
+## Responsibilities
+
+* Store generated chunks
+* Preserve document-level metadata
+* Report chunk statistics
+* Provide a stable interface for downstream pipelines
+
+Future milestones such as embedding generation and retrieval will consume ChunkingResult instead of interacting directly with chunking implementations.
+
+---
+
+# Chunking Strategies
+
+The chunking subsystem follows the Strategy Pattern.
+
+Instead of coupling the application to a single chunking algorithm, ChunkManager delegates chunk generation to interchangeable strategies.
+
+Current strategy:
+
+* RecursiveChunkingStrategy
+
+Future strategies may include:
+
+* SemanticChunkingStrategy
+* TokenBasedChunkingStrategy
+* MarkdownAwareChunkingStrategy
+* HTMLStructureChunkingStrategy
+* CodeAwareChunkingStrategy
+
+Supporting a new chunking algorithm should require implementing a new strategy rather than modifying existing orchestration logic.
+
+---
+
+# RecursiveChunkingStrategy
+
+## Purpose
+
+Provide the default chunking implementation for the platform.
+
+The strategy uses LangChain's RecursiveCharacterTextSplitter to produce retrieval-ready chunks while respecting configurable chunk sizes, overlap, and separator hierarchy.
+
+---
+
+## Responsibilities
+
+* Split standardized document text
+* Preserve logical text boundaries where possible
+* Apply configurable chunk size
+* Apply configurable chunk overlap
+* Preserve separator hierarchy
+* Build standardized Chunk models
+
+The implementation is intentionally independent of document formats, allowing the same algorithm to operate on every supported document type.
+
+---
+
+# Future Chunking Strategies
+
+The Strategy Pattern allows specialized chunking algorithms to be introduced without modifying ChunkManager or downstream retrieval components.
+
+Examples include:
+
+* Semantic chunking
+* Structure-aware chunking
+* Heading-aware chunking
+* Code-aware chunking
+* Token-aware chunking
+* Language-specific chunking
+
+Each implementation should conform to the same strategy interface, ensuring consistent orchestration while allowing the chunking algorithm itself to evolve independently.
 
 ---
 
@@ -1639,11 +1891,13 @@ This principle is fundamental to the long-term maintainability of the Modular AI
 
 # 4. Document Processing Architecture
 
-The **Document Processing subsystem** is responsible for transforming uploaded files into a standardized internal representation that can be consumed by future AI capabilities.
+The **Document Processing subsystem** is responsible for transforming uploaded files into standardized internal representations that serve as the foundation for the platform's knowledge pipeline.
 
-Unlike the AI Engine, which focuses on reasoning, the Document subsystem focuses on **ingestion, validation, parsing, metadata extraction, and normalization**.
+Unlike the AI Engine, which focuses on reasoning, the Document subsystem focuses on **ingestion, validation, parsing, metadata extraction, normalization, and document preparation**.
 
-It has been intentionally designed as an independent subsystem so that future capabilities such as Chunking, Embeddings, Vector Databases, and Retrieval-Augmented Generation (RAG) can be added without modifying the existing parsing pipeline.
+Once a document has been standardized, responsibility is handed to the independent **Chunking subsystem**, which prepares the document for downstream retrieval workflows.
+
+This separation ensures that document parsing, chunk generation, embedding generation, vector storage, and retrieval remain independent architectural concerns that can evolve without affecting one another.
 
 ---
 
@@ -1674,43 +1928,53 @@ Every uploaded document follows the same processing pipeline.
 
 ```text
 Client
-        │
-        ▼
+    │
+    ▼
 Document API
-        │
-        ▼
+    │
+    ▼
 DocumentService
-        │
-        ▼
+    │
+    ▼
 DocumentStorage
-        │
-        ▼
+    │
+    ▼
 DocumentManager
-        │
-        ▼
+    │
+    ▼
 DocumentDetector
-        │
-        ▼
+    │
+    ▼
 DocumentParserFactory
-        │
-        ▼
+    │
+    ▼
 BaseDocumentParser
-        │
-        ▼
+    │
+    ▼
 Concrete Parser
 (PDF / DOCX / TXT / Markdown)
-        │
-        ▼
+    │
+    ▼
 Document
-        │
-        ▼
-DocumentMapper
-        │
-        ▼
-API Response
+    │
+    ▼
+ChunkManager
+    │
+    ▼
+Chunking Strategy
+    │
+    ▼
+Chunk[]
+    │
+    ▼
+ChunkingResult
 ```
 
-Each component performs exactly one responsibility before handing control to the next stage.
+Each stage owns exactly one responsibility before passing standardized output to the next subsystem.
+
+The document pipeline ends with a standardized `Document` domain model.
+
+The Chunking subsystem begins from that point onward, preparing retrieval-ready chunks without introducing any dependency on file formats or parser implementations.
 
 ---
 
@@ -1955,22 +2219,30 @@ DOCX
 TXT
 Markdown
 
-        │
+      │
 
-        ▼
+      ▼
 
 Standardized Document
+
+      │
+
+      ▼
+
+ChunkManager
 ```
 
-Regardless of the original format, downstream systems always receive the same representation.
+Regardless of the original format, every downstream subsystem operates on the same `Document` representation.
 
-This dramatically simplifies future AI capabilities.
+This abstraction completely isolates future AI capabilities from document-specific parsing logic.
+
+The Document object therefore acts as the contract between document ingestion and knowledge preparation.
 
 ---
 
 # Document Metadata
 
-Every parsed document produces structured metadata.
+Every parsed document produces standardized metadata that remains associated with the document throughout downstream processing.
 
 Current metadata includes:
 
@@ -1981,7 +2253,9 @@ Current metadata includes:
 * Upload information
 * Parser information
 
-Future metadata may include:
+This metadata is inherited by the Chunking subsystem, allowing every generated chunk to maintain traceability back to its source document.
+
+Future metadata may additionally include:
 
 * Author
 * Creation date
@@ -1992,7 +2266,7 @@ Future metadata may include:
 * Token count
 * Document statistics
 
-Keeping metadata standardized allows future retrieval systems to operate consistently across all document types.
+Keeping document metadata standardized ensures that embeddings, retrieval systems, and Retrieval-Augmented Generation (RAG) can operate consistently across all supported document formats.
 
 ---
 
@@ -2051,67 +2325,52 @@ This separation keeps serialization concerns outside the business logic.
 
 # Object Relationships
 
-The document subsystem follows a layered ownership hierarchy.
+The document processing subsystem follows a layered ownership hierarchy.
 
 ```text
 Document API
-
-        │
-
-        ▼
-
+      │
+      ▼
 DocumentService
-
-        │
-
-        ▼
-
+      │
+      ▼
 DocumentStorage
-
-        │
-
-        ▼
-
+      │
+      ▼
 DocumentManager
-
-        │
-
-        ▼
-
+      │
+      ▼
 DocumentDetector
-
-        │
-
-        ▼
-
+      │
+      ▼
 DocumentParserFactory
-
-        │
-
-        ▼
-
+      │
+      ▼
 BaseDocumentParser
-
-        │
-
-        ▼
-
+      │
+      ▼
 Concrete Parser
-
-        │
-
-        ▼
-
+      │
+      ▼
 Document
-
-        │
-
-        ▼
-
-DocumentMapper
+      │
+      ▼
+ChunkManager
+      │
+      ▼
+Chunking Strategy
+      │
+      ▼
+ChunkingResult
 ```
 
 Each component owns only the responsibility immediately beneath it.
+
+Document Processing owns document ingestion.
+
+Chunking owns retrieval preparation.
+
+This clear separation keeps both subsystems independently extensible while establishing a stable interface between them.
 
 ---
 
@@ -2153,67 +2412,50 @@ Separate storage, detection, parsing, mapping, and API concerns.
 
 ---
 
-# Future Integration with the AI Engine
+# Integration with the AI Engine
 
-The Document subsystem has been designed to integrate naturally with future AI capabilities.
+The Document Processing and Chunking subsystems now provide the complete knowledge preparation pipeline for the platform.
 
-The planned evolution is:
+The current architecture is:
 
 ```text
 Upload
-
-        │
-
-        ▼
-
+    │
+    ▼
 Document
-
-        │
-
-        ▼
-
+    │
+    ▼
 Chunking
+    │
+    ▼
+ChunkingResult
+```
 
-        │
+Future milestones will extend this pipeline without modifying its existing stages:
 
-        ▼
-
+```text
+ChunkingResult
+      │
+      ▼
 Embeddings
-
-        │
-
-        ▼
-
+      │
+      ▼
 Vector Database
-
-        │
-
-        ▼
-
+      │
+      ▼
 Retriever
-
-        │
-
-        ▼
-
+      │
+      ▼
 Retrieval Pipeline
-
-        │
-
-        ▼
-
+      │
+      ▼
 RAG
-
-        │
-
-        ▼
-
+      │
+      ▼
 AI Engine
 ```
 
-Notice that the existing parsing subsystem remains unchanged.
-
-Each future milestone extends the pipeline by introducing a new processing stage rather than modifying previous ones.
+Because each subsystem communicates through standardized domain models, future capabilities can be introduced by extension rather than architectural restructuring.
 
 ---
 
@@ -2248,16 +2490,303 @@ The subsystem should be reusable by any future feature that requires document in
 
 ### 4. Long-Term Stability
 
-As Chunking, Embeddings, Retrieval, and RAG are introduced, the existing document processing pipeline should remain largely unchanged.
+The Document Processing and Chunking subsystems together establish the permanent foundation for knowledge ingestion within the Modular AI Engine.
 
-This stability ensures that new capabilities build upon a reliable foundation instead of continually restructuring the system.
+As Embeddings, Vector Databases, Retrieval, and Retrieval-Augmented Generation (RAG) are introduced, these foundational stages should remain largely unchanged.
 
-The Document Processing subsystem therefore serves as the entry point for all knowledge ingestion within the Modular AI Engine and forms the foundation for the platform's future retrieval and reasoning capabilities.
-
-
+Future milestones are expected to extend the pipeline rather than modify existing components, preserving stable interfaces and minimizing architectural churn.
 
 
-# 5. Engineering Principles & Development Philosophy
+
+
+# 5. Chunking Architecture
+
+The **Chunking subsystem** serves as the bridge between document ingestion and knowledge retrieval.
+
+Once the Document Processing subsystem has transformed an uploaded file into a standardized `Document` object, responsibility is transferred to the Chunking subsystem.
+
+Rather than operating on uploaded files, chunking works exclusively with domain models, making it completely independent of document formats, parser implementations, and storage mechanisms.
+
+This separation ensures that retrieval preparation evolves independently from document ingestion.
+
+---
+
+# Design Philosophy
+
+Chunking is treated as its own architectural subsystem rather than a utility function inside document parsing.
+
+The guiding principle is simple:
+
+> Documents are parsed once.
+>
+> Documents may be chunked many different ways.
+
+Keeping these responsibilities separate allows new chunking algorithms to be introduced without affecting document parsing or downstream retrieval.
+
+---
+
+# Responsibilities
+
+The Chunking subsystem is responsible for:
+
+* Transforming Documents into retrieval-ready chunks
+* Coordinating configurable chunking strategies
+* Preserving document metadata
+* Producing standardized Chunk domain models
+* Returning a consistent ChunkingResult
+* Preparing knowledge for downstream embedding generation
+
+It is **not** responsible for:
+
+* Uploading files
+* Detecting MIME types
+* Parsing documents
+* Generating embeddings
+* Communicating with vector databases
+* Retrieval
+* AI reasoning
+
+Those concerns belong to their own dedicated subsystems.
+
+---
+
+# Chunking Lifecycle
+
+Every standardized Document follows the same chunk generation workflow.
+
+```text
+Document
+    │
+    ▼
+ChunkManager
+    │
+    ▼
+Configured Chunking Strategy
+    │
+    ▼
+Chunk Generation
+    │
+    ▼
+Chunk Domain Models
+    │
+    ▼
+ChunkingResult
+```
+
+Each stage performs exactly one responsibility.
+
+The ChunkManager coordinates the workflow while the configured strategy performs the actual chunk generation.
+
+---
+
+# Chunking Workflow
+
+Conceptually the subsystem performs the following sequence.
+
+```text
+Document
+
+      │
+
+      ▼
+
+Extract Text
+
+      │
+
+      ▼
+
+Apply Chunking Strategy
+
+      │
+
+      ▼
+
+Generate Chunk Objects
+
+      │
+
+      ▼
+
+Attach Metadata
+
+      │
+
+      ▼
+
+Build ChunkingResult
+```
+
+Only standardized domain models flow between these stages.
+
+The workflow therefore remains independent of file format, parser implementation, or future embedding providers.
+
+---
+
+# Domain Models
+
+The Chunking subsystem currently consists of three primary domain models.
+
+## Document
+
+Represents a fully parsed document produced by the Document Processing subsystem.
+
+Acts as the input to chunk generation.
+
+---
+
+## Chunk
+
+Represents one retrieval unit.
+
+Each chunk contains:
+
+* Chunk identifier
+* Parent document identifier
+* Chunk index
+* Chunk content
+* Character boundaries
+* Metadata
+
+Every downstream retrieval component operates on Chunk objects rather than raw document text.
+
+---
+
+## ChunkingResult
+
+Represents the standardized output of the subsystem.
+
+Instead of returning raw collections, every chunking operation returns a ChunkingResult containing:
+
+* Generated chunks
+* Processing metadata
+* Chunk statistics
+
+This provides a stable contract for future embedding pipelines.
+
+---
+
+# Strategy Pattern
+
+The Chunking subsystem follows the Strategy Pattern.
+
+Rather than coupling the project to one splitting algorithm, ChunkManager delegates chunk generation to interchangeable strategies.
+
+```text
+ChunkManager
+      │
+      ▼
+BaseChunkingStrategy
+      │
+ ┌────┴───────────────┐
+ ▼                    ▼
+Recursive        Semantic
+Strategy         Strategy
+```
+
+Supporting a new chunking algorithm requires implementing another strategy instead of modifying orchestration logic.
+
+This minimizes regression risk while keeping the subsystem extensible.
+
+---
+
+# RecursiveChunkingStrategy
+
+The current implementation uses LangChain's RecursiveCharacterTextSplitter.
+
+Responsibilities include:
+
+* Respect configurable chunk sizes
+* Respect configurable overlap
+* Preserve separator hierarchy
+* Split documents into retrieval-sized units
+* Produce standardized Chunk objects
+
+The implementation is intentionally document-format independent.
+
+Whether the source originated from a PDF, DOCX, TXT, or Markdown file is irrelevant once a standardized Document has been produced.
+
+---
+
+# Configuration
+
+Chunk generation is entirely configuration driven.
+
+Current configuration includes:
+
+* Chunk size
+* Chunk overlap
+* Separator hierarchy
+* Separator preservation
+
+Future configuration may include:
+
+* Token-aware chunking
+* Language-specific rules
+* Heading-aware chunking
+* Semantic similarity thresholds
+* Adaptive chunk sizing
+
+Configuration should evolve without requiring changes to ChunkManager itself.
+
+---
+
+# Future Evolution
+
+The current recursive implementation establishes only the first stage of the retrieval pipeline.
+
+Future milestones are expected to extend the subsystem with:
+
+* Semantic chunking
+* Code-aware chunking
+* Markdown-aware chunking
+* HTML-aware chunking
+* Token-based chunking
+* AI-assisted chunking
+
+Each implementation should conform to the same strategy interface.
+
+As a result, downstream components such as Embedding Generation and Retrieval remain completely unaware of the specific chunking algorithm used.
+
+---
+
+# Architectural Benefits
+
+Separating chunk generation into its own subsystem provides several long-term advantages.
+
+## Separation of Concerns
+
+Document parsing and chunk generation evolve independently.
+
+---
+
+## Extensibility
+
+New chunking algorithms require new strategies rather than architectural rewrites.
+
+---
+
+## Reusability
+
+Multiple retrieval pipelines can reuse the same standardized Chunk objects.
+
+---
+
+## Testability
+
+Chunking can be validated independently from document parsing and embedding generation.
+
+---
+
+## Maintainability
+
+Every subsystem owns one architectural responsibility.
+
+This keeps the overall platform modular, easier to reason about, and significantly easier to extend as future milestones introduce embeddings, vector databases, retrieval, and Retrieval-Augmented Generation (RAG).
+
+---
+
+# 6. Engineering Principles & Development Philosophy
 
 Software architecture is not defined solely by classes and folders—it is shaped by the engineering principles that guide every design decision.
 
@@ -2474,15 +3003,23 @@ Define a common parsing workflow while allowing subclasses to customize format-s
 
 ## Strategy Pattern
 
-Used conceptually throughout the provider and parser architecture.
-
-Examples:
+Used by:
 
 * Provider implementations
 * Memory implementations
-* Parser implementations
+* Document parser implementations
+* Chunking strategies
 
-Each implementation follows the same interface while providing different behavior.
+Examples include:
+
+* Provider implementations
+* BaseMemoryStore implementations
+* BaseDocumentParser implementations
+* BaseChunkingStrategy implementations
+
+Each implementation follows a common interface while providing specialized behavior.
+
+This architecture allows new providers, parsers, memory backends, and chunking algorithms to be introduced without modifying orchestration logic.
 
 ---
 
@@ -2523,28 +3060,22 @@ Dependencies must always flow downward.
 
 ```text
 Application
-
-        │
-
-        ▼
-
+      │
+      ▼
 API
-
-        ▼
-
+      │
+      ▼
 Services
-
-        ▼
-
-Engine
-
-        ▼
-
-Providers
-
-        ▼
-
-External Services
+      │
+      ├─────────────┐
+      ▼             ▼
+AI Engine     Document Processing
+      │             │
+      ▼             ▼
+Providers     Chunking
+      │             │
+      ▼             ▼
+External AI    Future Retrieval
 ```
 
 Lower layers must never import higher layers.
@@ -2553,17 +3084,23 @@ Examples:
 
 ✅ API → Services
 
-✅ Services → Engine
+✅ Services → AI Engine
 
-✅ Engine → Providers
+✅ Services → Document Processing
+
+✅ Document Processing → Chunking
+
+✅ AI Engine → Providers
 
 ❌ Providers → Services
 
+❌ Chunking → Document Processing
+
 ❌ Engine → API
 
-❌ Memory → Services
+❌ Providers → Engine
 
-Following these rules prevents circular dependencies and keeps the architecture modular.
+Following these rules preserves subsystem independence and prevents circular dependencies.
 
 ---
 
@@ -2643,24 +3180,18 @@ Every milestone follows the same engineering workflow.
 
 ```text
 Architecture
-
-        │
-
-        ▼
-
+      │
+      ▼
 Implementation
-
-        ▼
-
+      │
+      ▼
 Testing
-
-        ▼
-
+      │
+      ▼
+Documentation
+      │
+      ▼
 Git Commit
-
-        ▼
-
-Documentation Update
 ```
 
 A milestone is considered complete only when:
@@ -2670,22 +3201,21 @@ A milestone is considered complete only when:
 * Documentation has been updated
 * Architecture remains consistent
 * Existing functionality continues to work
+* Public interfaces remain stable
 
-This workflow ensures that documentation evolves alongside the codebase rather than becoming outdated.
+This workflow ensures that documentation evolves alongside the codebase and that architectural quality is maintained throughout development.
 
 ---
 
 # Extension Guidelines
 
-The Modular AI Engine is expected to grow significantly.
+The Modular AI Engine has been intentionally designed for continuous architectural evolution.
 
-Future capabilities should integrate through existing architectural extension points.
-
-Examples include:
+Future capabilities should integrate through existing extension points rather than modifying established subsystems.
 
 ## AI Engine
 
-New capabilities should be introduced as PipelineSteps.
+New reasoning capabilities should be introduced as PipelineSteps.
 
 Examples:
 
@@ -2700,18 +3230,16 @@ Examples:
 
 ## Providers
 
-Supporting a new provider should require:
+Supporting a new AI provider should require:
 
-* Creating a new provider implementation.
-* Registering it in ProviderFactory.
-
-No other subsystem should require modification.
+* Creating a provider implementation
+* Registering it in ProviderFactory
 
 ---
 
 ## Memory
 
-Supporting a new storage backend should require implementing BaseMemoryStore.
+Supporting a new persistence backend should require implementing BaseMemoryStore.
 
 Examples:
 
@@ -2724,127 +3252,121 @@ Examples:
 
 ## Document Processing
 
-Supporting a new file format should require:
+Supporting a new document format should require:
 
-* Creating a parser.
-* Registering it in DocumentParserFactory.
+* Creating a parser
+* Registering it in DocumentParserFactory
 
-The remainder of the document pipeline should remain unchanged.
+---
+
+## Chunking
+
+Supporting a new chunking algorithm should require:
+
+* Implementing BaseChunkingStrategy
+* Registering the strategy
+* Configuring ChunkManager
+
+Examples:
+
+* Semantic chunking
+* Token-aware chunking
+* Markdown-aware chunking
+* HTML-aware chunking
+* Code-aware chunking
 
 ---
 
 ## Retrieval
 
-The retrieval subsystem should integrate between Memory and Provider execution.
+The retrieval subsystem will consume standardized ChunkingResult objects.
 
 Conceptually:
 
 ```text
-ExecutionPipeline
-
-        ▼
-
-MemoryStep
-
-        ▼
-
-RetrieverStep
-
-        ▼
-
-RAGStep
-
-        ▼
-
-ProviderStep
+ChunkingResult
+      │
+      ▼
+Embeddings
+      │
+      ▼
+Vector Database
+      │
+      ▼
+Retriever
+      │
+      ▼
+RAG
 ```
 
-The existing execution pipeline should require minimal modification.
+Each subsystem should evolve independently while communicating through stable domain models.
 
 ---
 
 # Long-Term Architectural Evolution
 
-The project has been intentionally designed for gradual evolution.
+The project has been intentionally designed for gradual, milestone-driven evolution.
 
-The expected architectural progression is:
+The expected progression is:
 
 ```text
 Chat Backend
-
-        ▼
-
+      │
+      ▼
 AI Engine
-
-        ▼
-
+      │
+      ▼
 Conversation Memory
-
-        ▼
-
+      │
+      ▼
 Streaming
-
-        ▼
-
+      │
+      ▼
 Document Processing
-
-        ▼
-
-Chunking
-
-        ▼
-
-Embeddings
-
-        ▼
-
+      │
+      ▼
+Chunking              ✅ Completed
+      │
+      ▼
+Embedding Generation  ← Current Next Milestone
+      │
+      ▼
 Vector Database
-
-        ▼
-
-Retrieval
-
-        ▼
-
-RAG
-
-        ▼
-
+      │
+      ▼
+Retriever
+      │
+      ▼
+Retrieval Pipeline
+      │
+      ▼
+Retrieval-Augmented Generation (RAG)
+      │
+      ▼
 LangGraph
-
-        ▼
-
+      │
+      ▼
 Tool Calling
-
-        ▼
-
+      │
+      ▼
 Multi-Agent Systems
-
-        ▼
-
+      │
+      ▼
 Complete AI Reasoning Platform
 ```
 
-Each stage builds upon previously established architectural foundations.
+Each stage extends previously established architectural foundations.
 
-Rather than repeatedly restructuring the application, future milestones should extend existing abstractions.
+Rather than repeatedly restructuring the application, new capabilities should integrate through stable abstractions such as PipelineSteps, Providers, Memory implementations, Document Processing, and Chunking.
 
 ---
 
 # Guiding Philosophy
 
-The ultimate objective of the Modular AI Engine is **not** to maximize the number of implemented features.
+The success of the Modular AI Engine will ultimately be measured not by the number of implemented features, but by how easily new capabilities can be integrated while preserving modularity, stability, and architectural clarity.
 
-Instead, the objective is to build an architecture that remains understandable, maintainable, extensible, and production-ready as the system grows.
+Every milestone should strengthen existing abstractions rather than replace them.
 
-Every architectural decision should answer the following questions:
+The addition of the Document Processing and Chunking subsystems demonstrates this philosophy by extending the platform's capabilities without requiring fundamental changes to the AI Engine or other established components.
 
-* Does this improve modularity?
-* Does this reduce coupling?
-* Does this make future development easier?
-* Does this preserve clean architectural boundaries?
-* Does this encourage reuse rather than duplication?
-
-If the answer to these questions is consistently **yes**, the architecture is moving in the right direction.
-
-The success of the project will ultimately be measured not by the number of features it contains, but by how easily new capabilities can be integrated while preserving the clarity, stability, and elegance of the existing system.
+This commitment to incremental evolution ensures that the project can grow into a complete AI reasoning platform while remaining maintainable, extensible, and production-ready.

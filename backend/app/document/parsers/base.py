@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import Any
+from uuid import uuid4
 
 from app.document.exceptions import DocumentParsingError
 from app.document.models import Document, DocumentMetadata, DocumentType
@@ -37,6 +38,7 @@ class BaseDocumentParser(ABC):
             )
 
             return Document(
+                document_id=str(uuid4()),
                 document_type=self.DOCUMENT_TYPE,
                 content=content,
                 metadata=metadata,
@@ -44,8 +46,7 @@ class BaseDocumentParser(ABC):
 
         except Exception as exc:
             raise DocumentParsingError(
-                f"Failed to parse '{file_path.name}' "
-                f"using {self.__class__.__name__}."
+                f"Failed to parse '{file_path.name}' using {self.__class__.__name__}."
             ) from exc
 
     @abstractmethod
