@@ -12,11 +12,17 @@ class Settings(BaseSettings):
 
     LLM_PROVIDER: str = "groq"
 
+    EMBEDDING_PROVIDER: str = "gemini"
+
     GROQ_API_KEY: str
 
     OPENAI_API_KEY: str = ""
 
     GEMINI_API_KEY: str = ""
+
+    GEMINI_EMBEDDING_MODEL: str = "gemini-embedding-001"
+
+    OPENAI_EMBEDDING_MODEL: str = "text-embedding-3-small"
 
     # ==========================
     # Document Settings

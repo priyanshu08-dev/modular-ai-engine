@@ -12,7 +12,7 @@ The roadmap is intentionally adaptive. As the architecture evolves, milestones m
 
 # Current Version
 
-**v0.6.0**
+**v0.7.0**
 
 ---
 
@@ -28,33 +28,33 @@ The roadmap is intentionally adaptive. As the architecture evolves, milestones m
 
 ## Current Milestone
 
-⏳ **M12 — Embedding Generation**
+⏳ **M13 — ChromaDB Integration**
 
 ## Last Completed Milestone
 
-✅ **M11 — Chunking Pipeline**
+✅ **M12 — Embedding Generation**
 
 ---
 
 # Overall Progress
 
 ```text
-██████████████░░░░░░░
+███████████████░░░░░░
 
 Phase Progress
 
 Phase 1  ✅ 100%
 Phase 2  ✅ 100%
-Phase 3  ✅ 40%
+Phase 3  ✅ 60%
 Phase 4  ⬜ 0%
 Phase 5  ⬜ 0%
 
-Overall Project ≈ 68%
+Overall Project ≈ 72%
 ```
 
-The foundational architecture of the Modular AI Engine now includes a complete document preparation pipeline consisting of document parsing and retrieval-ready chunk generation.
+The foundational architecture of the Modular AI Engine now includes a complete knowledge preparation pipeline consisting of document parsing, retrieval-ready chunk generation, and provider-independent embedding generation.
 
-Future development focuses on embedding generation, vector storage, semantic retrieval, orchestration, tooling, and production readiness while preserving the existing modular architecture.
+Future development focuses on vector storage, semantic retrieval, Retrieval-Augmented Generation (RAG), workflow orchestration, tooling, and production readiness while preserving the project's modular, provider-independent architecture.
 
 ---
 
@@ -134,25 +134,40 @@ Enable the AI Engine to understand, retrieve, and reason over uploaded knowledge
 
 **Status**
 
-⏳ Next
+✅ Completed
 
-### Objectives
+### Delivered
 
-- Generate vector embeddings
-- Embedding abstraction
+- Embedding domain model
+- EmbeddingMetadata model
+- EmbeddingResult abstraction
+- EmbeddingManager orchestration layer
+- EmbeddingFactory provider selection layer
 - Provider-independent embedding interface
-- Batch embedding support
+- Gemini embedding provider
+- OpenAI embedding provider
+- Batch embedding generation
+- Configurable embedding provider selection
+- Configurable embedding model selection
+- Immutable embedding metadata
+- Asynchronous embedding generation
+- Complete chunk-to-embedding processing pipeline
 
 ---
 
 ## M13 — ChromaDB Integration
 
+**Status**
+
+⏳ Next
+
 ### Objectives
 
 - Persistent vector storage
+- Collection management
+- Embedding persistence
 - Similarity search
 - Metadata filtering
-- Collection management
 
 ---
 
@@ -319,6 +334,7 @@ The first stable release should provide a production-grade modular AI backend ca
 - Markdown Parsing
 - Standardized Document Model
 - Recursive Chunking Pipeline
+- Provider-Independent Embedding Pipeline
 
 ### Planned
 
@@ -334,10 +350,11 @@ The first stable release should provide a production-grade modular AI backend ca
 
 - Retrieval-ready document chunking
 - Chunk orchestration pipeline
+- Provider-independent embedding generation
+- Batch embedding pipeline
 
 ### Planned
 
-- Embeddings
 - Vector Database
 - Semantic Retrieval
 - Retrieval Pipeline

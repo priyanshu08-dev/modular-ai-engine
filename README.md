@@ -109,19 +109,32 @@ Currently supports:
 - Configurable chunk size and overlap
 - Configurable separator hierarchy
 - Retrieval-ready chunk generation
+- Provider-independent embedding generation
+- Batch embedding generation
+- Configurable embedding providers
+- Standardized embedding abstractions
 
 ---
 
 ## Provider Support
 
-### Currently Supported
+### LLM Providers
+
+#### Currently Supported
 
 - ✅ Groq
 
-### Planned
+#### Planned
 
 - OpenAI
 - Gemini
+
+### Embedding Providers
+
+#### Currently Supported
+
+- ✅ Gemini
+- ✅ OpenAI
 
 ---
 
@@ -151,6 +164,8 @@ POST /documents/parse
 
 - LangChain
 - LangChain Text Splitters
+- LangChain Google GenAI
+- LangChain OpenAI
 
 ## Planned AI Technologies
 
@@ -173,6 +188,7 @@ app/
 ├── chunking/
 ├── config/
 ├── document/
+├── embeddings/
 ├── engine/
 ├── providers/
 ├── schemas/
@@ -213,7 +229,10 @@ Example:
 
 ```env
 LLM_PROVIDER=groq
-GROQ_API_KEY=your_api_key
+EMBEDDING_PROVIDER=gemini
+
+GROQ_API_KEY=your_groq_api_key
+GEMINI_API_KEY=your_gemini_api_key
 ```
 
 ---
@@ -249,7 +268,7 @@ http://127.0.0.1:8000/redoc
 **Version**
 
 ```
-v0.6.0
+v0.7.0
 ```
 
 **Status**
@@ -265,8 +284,9 @@ The foundational architecture of the Modular AI Engine now includes:
 - Provider Abstraction
 - Document Processing
 - Recursive Chunking Pipeline
+- Provider-Independent Embedding Pipeline
 
-The engine now supports a complete document preparation workflow that transforms uploaded documents into retrieval-ready chunks, establishing the foundation for upcoming embedding generation, vector database integration, and Retrieval-Augmented Generation (RAG).
+The engine now supports a complete knowledge preparation workflow that transforms uploaded documents into standardized document objects, retrieval-ready chunks, and provider-independent vector embeddings, establishing the foundation for vector database integration, semantic retrieval, and Retrieval-Augmented Generation (RAG).
 
 For detailed project progress and milestone tracking, see **ROADMAP.md**.
 
@@ -292,7 +312,7 @@ This separation keeps the documentation maintainable while avoiding duplication 
 The long-term objective is to evolve Modular AI Engine from a reusable AI backend into a complete AI reasoning platform capable of supporting:
 
 - Multiple AI providers
-- Retrieval-Augmented Generation (RAG) built on the completed document parsing and chunking pipeline
+- Retrieval-Augmented Generation (RAG) built on the completed document parsing, chunking, and embedding pipeline
 - Workflow orchestration
 - Tool Calling
 - Multi-Agent Systems
