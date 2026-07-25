@@ -1,5 +1,4 @@
 from app.config.settings import settings
-
 from app.embeddings.exceptions import (
     UnsupportedEmbeddingProviderError,
 )

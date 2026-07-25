@@ -14,6 +14,12 @@ class Settings(BaseSettings):
 
     EMBEDDING_PROVIDER: str = "gemini"
 
+    VECTORSTORE_PROVIDER: str = "chromadb"
+
+    CHROMADB_PATH: str = "./chroma_db"
+
+    DEFAULT_VECTOR_COLLECTION: str = "documents"
+
     GROQ_API_KEY: str
 
     OPENAI_API_KEY: str = ""

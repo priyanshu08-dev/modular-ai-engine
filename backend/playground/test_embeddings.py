@@ -4,11 +4,12 @@ import asyncio
 
 from app.chunking.models import (
     Chunk,
-    ChunkMetadata,
     ChunkingResult,
+    ChunkMetadata,
 )
 from app.document.models import DocumentType
 from app.embeddings.manager import EmbeddingManager
+from app.vectorstore.manager import VectorStoreManager
 
 
 async def main() -> None:
@@ -43,6 +44,7 @@ async def main() -> None:
         ],
     )
 
+
     manager = EmbeddingManager()
 
     result = await manager.generate_embeddings(
@@ -52,9 +54,26 @@ async def main() -> None:
     print("=" * 60)
     print("Embedding Generation Result")
     print("=" * 60)
-
+    
     print(f"Document ID : {result.document_id}")
     print(f"Embeddings  : {len(result.embeddings)}")
+
+
+
+    vectorstore_manager = VectorStoreManager()
+
+    await vectorstore_manager.store_embeddings(
+        chunking_result,
+        result,
+    )
+
+    count = await vectorstore_manager.count()
+
+    print("=" * 60)
+    print(f"Vectors stored in ChromaDB : {count}")
+    print("=" * 60)
+
+
 
     for embedding in result.embeddings:
 
