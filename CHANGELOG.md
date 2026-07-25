@@ -554,95 +554,215 @@ This milestone establishes the architectural foundation required for embedding g
 ---
 
 
-## Milestone 11 — Chunking Pipeline
+## Milestone 12 — Embedding Generation
 
 ### Added
 
-#### Chunking Subsystem
+#### Embedding Subsystem
 
-* Chunking module.
-* ChunkManager orchestration layer.
-* Chunk domain model.
-* ChunkMetadata model.
-* ChunkingResult model.
-* BaseChunkingStrategy abstraction.
-* RecursiveChunkingStrategy implementation.
-* SemanticChunkingStrategy placeholder for future semantic chunking.
+* Embedding module.
+* EmbeddingManager orchestration layer.
+* EmbeddingFactory provider selection layer.
+* Embedding domain model.
+* EmbeddingMetadata model.
+* EmbeddingResult model.
+* BaseEmbeddingProvider abstraction.
+* GeminiEmbeddingProvider implementation.
+* OpenAIEmbeddingProvider implementation.
 
-#### Chunking Features
+#### Embedding Features
 
-* Recursive document chunking using LangChain RecursiveCharacterTextSplitter.
-* Configurable chunk size.
-* Configurable chunk overlap.
-* Configurable separator hierarchy.
-* Configurable separator preservation.
-* Retrieval-ready chunk generation.
-
-#### Testing
-
-* End-to-end chunking playground for validating document-to-chunk processing.
+* Configurable embedding provider selection.
+* Configurable embedding model selection.
+* Batch embedding generation for document chunks.
+* Asynchronous embedding generation using background thread execution.
+* Provider-independent embedding generation workflow.
+* Globally unique embedding identifiers.
+* Immutable embedding metadata shared across embedding batches.
 
 ### Changed
 
-* Extended the Document model with globally unique document identifiers.
-* Updated the document parsing workflow to generate document IDs automatically.
-* Standardized chunking output through the ChunkingResult abstraction.
-* Updated document schemas and mappers to expose document identifiers.
+* Introduced a dedicated embedding provider configuration independent of LLM provider selection.
+* Standardized embedding generation through the EmbeddingResult abstraction.
+* Updated project configuration to support provider-specific embedding models.
+* Adopted LangChain embedding providers for all supported embedding services.
 
 ### Improved
 
-* Established a complete document-to-chunk processing pipeline.
-* Decoupled document parsing from text chunking.
-* Standardized downstream interfaces for future embedding and retrieval pipelines.
-* Improved extensibility through a pluggable chunking architecture based on the Strategy Pattern.
+* Established a complete chunk-to-embedding generation pipeline.
+* Decoupled embedding generation from downstream vector database implementations.
+* Standardized embedding outputs across multiple AI providers.
+* Improved extensibility through a pluggable embedding provider architecture based on the Factory Pattern.
+* Optimized embedding generation using batch processing instead of per-chunk requests.
+* Preserved FastAPI responsiveness by offloading synchronous provider calls to background threads.
 
 ### Refactored
 
-* Separated document-level metadata from chunk-level metadata.
-* Simplified chunk orchestration by centralizing workflow coordination within ChunkManager.
-* Refined the chunking architecture to support interchangeable chunking strategies.
+* Flattened the embedding provider package structure by removing unnecessary implementation nesting.
+* Simplified provider creation through centralized factory-based instantiation.
+* Consolidated shared embedding metadata across batch-generated embeddings.
+* Standardized provider implementations to follow a common generation workflow.
 
 ### Removed
 
-* Removed the planned splitter wrapper abstraction in favor of a cleaner Strategy Pattern implementation.
-* Removed temporary token count estimation from the Chunk model pending provider-specific tokenization during the Embedding milestone.
+* Removed the temporary local embedding provider implementation.
+* Removed provider caching in favor of stateless provider instantiation.
+* Removed unnecessary provider implementation wrapper directories to simplify the project structure.
 
 ### Fixed
 
-* Resolved constructor mismatches introduced during model refactoring.
-* Updated chunk generation logic to align with the finalized Chunk domain model.
-* Verified end-to-end chunk generation through integration testing.
+* Resolved provider architecture inconsistencies across the embedding subsystem.
+* Corrected embedding generation to use batch processing for improved efficiency.
+* Ensured one-to-one mapping between generated embeddings and document chunks.
+* Improved embedding metadata consistency across generated embedding batches.
 
 ### Architecture Impact
 
-The project now includes a complete retrieval preparation pipeline.
+The project now includes a complete embedding generation pipeline.
 
 ```
-Upload File
-      │
-      ▼
-Document Parsing
-      │
-      ▼
 Document
       │
       ▼
 ChunkManager
       │
       ▼
-Chunking Strategy
+ChunkingResult
       │
       ▼
-Chunk[]
+EmbeddingManager
+      │
+      ▼
+EmbeddingFactory
+      │
+      ▼
+Embedding Provider
+      │
+      ▼
+Embedding[]
+      │
+      ▼
+EmbeddingResult
+```
+
+The embedding subsystem operates entirely on standardized `ChunkingResult` objects while remaining independent of individual AI providers. Provider selection is abstracted through the EmbeddingFactory, allowing new embedding providers to be integrated without affecting downstream components.
+
+This milestone establishes the architectural foundation required for vector database integration, semantic similarity search, document retrieval, Retrieval-Augmented Generation (RAG), and future provider expansion while preserving the project's modular, provider-independent design.
+
+
+---
+
+
+## Milestone 13 — ChromaDB Integration
+
+### Added
+
+#### Vector Store Subsystem
+
+* Vector Store module.
+* VectorStoreManager orchestration layer.
+* VectorStoreFactory provider selection layer.
+* VectorStoreMapper transformation layer.
+* VectorBatch domain model.
+* VectorRecord domain model.
+* BaseVectorStoreProvider abstraction.
+* ChromaVectorStoreProvider implementation.
+
+#### Vector Storage Features
+
+* Configurable vector database provider selection.
+* Persistent local ChromaDB storage.
+* Collection-based vector organization.
+* Batch vector persistence for generated embeddings.
+* Asynchronous vector database operations using background thread execution.
+* Provider-independent vector storage workflow.
+* Vector metadata persistence alongside embedding vectors.
+* Document-level vector management.
+* Collection existence validation.
+* Vector count operations.
+* Document vector deletion.
+* Collection deletion.
+* Provider-level similarity search capability.
+
+### Changed
+
+* Introduced a dedicated vector database provider configuration independent of embedding provider selection.
+* Standardized vector persistence through the VectorBatch abstraction.
+* Updated project configuration to support configurable ChromaDB storage paths and default collections.
+* Decoupled collection selection from vector storage domain models by delegating collection management to the orchestration layer.
+* Integrated vector storage into the embedding generation pipeline while preserving subsystem independence.
+
+### Improved
+
+* Established a complete embedding-to-vector storage pipeline.
+* Decoupled vector storage from embedding generation through a dedicated mapping layer.
+* Standardized vector persistence across future vector database providers.
+* Improved extensibility through a pluggable provider architecture based on the Factory Pattern.
+* Optimized vector storage using batch insertion instead of individual vector writes.
+* Preserved FastAPI responsiveness by offloading synchronous ChromaDB operations to background threads.
+* Cached vector database client instances to reduce repeated initialization overhead.
+* Cached collection instances to improve repeated database operations and prepare the architecture for future multi-collection support.
+
+### Refactored
+
+* Introduced a dedicated VectorStoreMapper to isolate transformation between embedding models and vector storage models.
+* Simplified provider responsibilities by separating collection selection from database operations.
+* Standardized vector metadata generation during mapping instead of provider-specific construction.
+* Refined subsystem boundaries to distinguish vector storage responsibilities from future retrieval workflows.
+* Standardized provider implementations to operate on reusable vector storage domain models.
+
+### Removed
+
+* Removed collection-specific information from VectorBatch domain models.
+* Removed provider dependency on global configuration for collection selection.
+* Removed redundant metadata construction from provider implementations.
+* Eliminated direct coupling between embedding models and vector database payloads.
+
+### Fixed
+
+* Resolved architectural inconsistencies between embedding generation and vector storage.
+* Corrected vector persistence workflow to use dedicated mapping abstractions.
+* Ensured one-to-one mapping between generated embeddings and persisted vector records.
+* Improved metadata consistency across stored vectors.
+* Added validation to prevent persistence of embeddings without corresponding document chunks.
+
+### Architecture Impact
+
+The project now includes a complete vector storage pipeline.
+
+```text
+Document
+      │
+      ▼
+ChunkManager
       │
       ▼
 ChunkingResult
+      │
+      ▼
+EmbeddingManager
+      │
+      ▼
+EmbeddingResult
+      │
+      ▼
+VectorStoreMapper
+      │
+      ▼
+VectorBatch
+      │
+      ▼
+VectorStoreManager
+      │
+      ▼
+VectorStoreFactory
+      │
+      ▼
+Vector Store Provider
+      │
+      ▼
+ChromaDB
 ```
-
-The chunking subsystem operates entirely on standardized Document objects, remaining independent of file formats and parsing implementations.
-
-This milestone establishes the architectural foundation required for embedding generation, vector database integration, semantic retrieval, and Retrieval-Augmented Generation (RAG) while preserving the project's modular, provider-independent design.
-
 
 ---
 
@@ -652,18 +772,28 @@ This milestone establishes the architectural foundation required for embedding g
 
 ## Versions Included
 
-* ✅ v0.4.0
-* ✅ v0.5.0
-* ✅ v0.6.0
+✅ v0.1.0 — Foundation
+✅ v0.2.0 — AI Engine Core
+✅ v0.3.0 — Conversational Intelligence
+✅ v0.4.0 — Knowledge Ingestion
+✅ v0.5.0 — Knowledge Preparation
 
 ## Milestones Covered
 
-* ✅ M6 — Project Documentation
-* ✅ M7 — Execution Pipeline
-* ✅ M8 — Conversation Memory & LangChain Message Pipeline
-* ✅ M9 — Streaming Responses
-* ✅ M10 — Document Upload & Processing
-* ✅ M11 — Chunking Pipeline
+✅ M1 — Project Foundation
+✅ M2 — Provider Abstraction
+✅ M3 — Chat API
+✅ M4 — AI Engine
+✅ M5 — Health Check & Streaming Foundation
+✅ M6 — Project Documentation
+✅ M7 — Execution Pipeline
+✅ M8 — Conversation Memory & LangChain Message Pipeline
+✅ M9 — Streaming Responses
+✅ M10 — Document Upload & Processing
+✅ M11 — Chunking Pipeline
+✅ M12 — Embedding Generation
+✅ M13 — ChromaDB Integration
+
 
 ---
 

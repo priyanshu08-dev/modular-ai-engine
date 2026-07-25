@@ -12,7 +12,7 @@ The roadmap is intentionally adaptive. As the architecture evolves, milestones m
 
 # Current Version
 
-**v0.7.0**
+**v0.5.0**
 
 ---
 
@@ -28,33 +28,33 @@ The roadmap is intentionally adaptive. As the architecture evolves, milestones m
 
 ## Current Milestone
 
-⏳ **M13 — ChromaDB Integration**
+⏳ **M14 — Retrieval Pipeline**
 
 ## Last Completed Milestone
 
-✅ **M12 — Embedding Generation**
+✅ **M13 — ChromaDB Integration**
 
 ---
 
 # Overall Progress
 
 ```text
-███████████████░░░░░░
+████████████████░░░░░
 
 Phase Progress
 
 Phase 1  ✅ 100%
 Phase 2  ✅ 100%
-Phase 3  ✅ 60%
+Phase 3  ✅ 80%
 Phase 4  ⬜ 0%
 Phase 5  ⬜ 0%
 
-Overall Project ≈ 72%
+Overall Project ≈ 76%
 ```
 
-The foundational architecture of the Modular AI Engine now includes a complete knowledge preparation pipeline consisting of document parsing, retrieval-ready chunk generation, and provider-independent embedding generation.
+The foundational architecture of the Modular AI Engine now includes a complete knowledge preparation pipeline consisting of document parsing, retrieval-ready chunk generation, provider-independent embedding generation, and persistent vector storage.
 
-Future development focuses on vector storage, semantic retrieval, Retrieval-Augmented Generation (RAG), workflow orchestration, tooling, and production readiness while preserving the project's modular, provider-independent architecture.
+Future development focuses on semantic retrieval, Retrieval-Augmented Generation (RAG), workflow orchestration, intelligent tooling, and production readiness while preserving the project's modular, provider-independent architecture.
 
 ---
 
@@ -159,19 +159,39 @@ Enable the AI Engine to understand, retrieve, and reason over uploaded knowledge
 
 **Status**
 
-⏳ Next
+✅ Completed
 
-### Objectives
+### Delivered
 
-- Persistent vector storage
+- VectorStoreManager orchestration layer
+- VectorStoreFactory provider selection layer
+- VectorStoreMapper transformation layer
+- BaseVectorStoreProvider abstraction
+- ChromaVectorStoreProvider implementation
+- VectorBatch domain model
+- VectorRecord domain model
+- Persistent ChromaDB integration
+- Provider-independent vector storage architecture
+- Batch embedding persistence
 - Collection management
-- Embedding persistence
-- Similarity search
-- Metadata filtering
+- Vector metadata persistence
+- Document-level vector deletion
+- Collection deletion
+- Collection existence validation
+- Vector count operations
+- Provider-level similarity search capability
+- End-to-end embedding-to-vector storage pipeline
+- Integration testing via playground
+
+
 
 ---
 
 ## M14 — Retrieval Pipeline
+
+**Status**
+
+⏳ Next
 
 ### Objectives
 
@@ -335,6 +355,8 @@ The first stable release should provide a production-grade modular AI backend ca
 - Standardized Document Model
 - Recursive Chunking Pipeline
 - Provider-Independent Embedding Pipeline
+- Persistent ChromaDB Vector Storage
+- Provider-Independent Vector Storage Pipeline
 
 ### Planned
 
@@ -352,10 +374,13 @@ The first stable release should provide a production-grade modular AI backend ca
 - Chunk orchestration pipeline
 - Provider-independent embedding generation
 - Batch embedding pipeline
+- Persistent vector storage
+- ChromaDB integration
+- Vector storage abstraction
+- Vector metadata persistence
 
 ### Planned
 
-- Vector Database
 - Semantic Retrieval
 - Retrieval Pipeline
 - Retrieval-Augmented Generation (RAG)

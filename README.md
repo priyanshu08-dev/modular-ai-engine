@@ -113,6 +113,11 @@ Currently supports:
 - Batch embedding generation
 - Configurable embedding providers
 - Standardized embedding abstractions
+- Persistent ChromaDB vector storage
+- Collection-based vector organization
+- Provider-independent vector storage architecture
+- Batch embedding persistence
+- Vector metadata persistence
 
 ---
 
@@ -166,11 +171,11 @@ POST /documents/parse
 - LangChain Text Splitters
 - LangChain Google GenAI
 - LangChain OpenAI
+- ChromaDB
 
 ## Planned AI Technologies
 
 - LangGraph
-- ChromaDB
 
 ## Dependency Management
 
@@ -193,6 +198,7 @@ app/
 ├── providers/
 ├── schemas/
 ├── services/
+├── vectorstore/
 └── main.py
 ```
 
@@ -268,7 +274,7 @@ http://127.0.0.1:8000/redoc
 **Version**
 
 ```
-v0.7.0
+v0.5.0
 ```
 
 **Status**
@@ -285,8 +291,10 @@ The foundational architecture of the Modular AI Engine now includes:
 - Document Processing
 - Recursive Chunking Pipeline
 - Provider-Independent Embedding Pipeline
+- Provider-Independent Vector Storage Pipeline
+- Persistent ChromaDB Integration
 
-The engine now supports a complete knowledge preparation workflow that transforms uploaded documents into standardized document objects, retrieval-ready chunks, and provider-independent vector embeddings, establishing the foundation for vector database integration, semantic retrieval, and Retrieval-Augmented Generation (RAG).
+The engine now supports a complete knowledge preparation workflow that transforms uploaded documents into standardized document objects, retrieval-ready chunks, provider-independent vector embeddings, and persistent vector storage, establishing the foundation for semantic retrieval, Retrieval-Augmented Generation (RAG), and intelligent knowledge-based reasoning.
 
 For detailed project progress and milestone tracking, see **ROADMAP.md**.
 
@@ -312,7 +320,9 @@ This separation keeps the documentation maintainable while avoiding duplication 
 The long-term objective is to evolve Modular AI Engine from a reusable AI backend into a complete AI reasoning platform capable of supporting:
 
 - Multiple AI providers
-- Retrieval-Augmented Generation (RAG) built on the completed document parsing, chunking, and embedding pipeline
+- Persistent vector storage
+- Semantic retrieval
+- Retrieval-Augmented Generation (RAG)
 - Workflow orchestration
 - Tool Calling
 - Multi-Agent Systems

@@ -77,38 +77,31 @@ The current architecture separates application concerns into independent layers.
                        │
                        ▼
                  Service Layer
-                ┌────────┴──────────────────────────┐
-                ▼                                   ▼
-           AI Engine                    Knowledge Processing
-                │                                   │
-                ▼                                   ▼
-      Execution Pipeline                 Document Processing
-                │                                   │
-                ▼                                   ▼
-          Provider Layer                       Chunking
-                │                                   │
-                ▼                                   ▼
+                ┌────────┴──────────────────────────────┐
+                ▼                                       ▼
+           AI Engine                         Knowledge Processing
+                │                                       │
+                ▼                                       ▼
+      Execution Pipeline                   Document Processing
+                │                                       │
+                ▼                                       ▼
+          Provider Layer                         Chunking
+                │                                       │
+                ▼                                       ▼
               LLM                          Embedding Generation
-                                                    │
-                                                    ▼
-                                            Future Vector Database
+                                                        │
+                                                        ▼
+                                               Vector Storage
+                                                        │
+                                                        ▼
+                                                 Future Retrieval
 ```
-
-Each layer owns a single responsibility.
-
-The API layer never performs AI reasoning.
-
-The Service layer coordinates business workflows without embedding implementation details.
 
 The AI Engine orchestrates conversational reasoning while remaining provider-independent.
 
-The Document Processing subsystem transforms uploaded files into standardized `Document` objects.
+The Knowledge Processing pipeline independently transforms uploaded documents into retrieval-ready knowledge through a sequence of specialized subsystems. Document Processing produces standardized `Document` objects, the Chunking subsystem generates retrieval-ready chunks, the Embedding subsystem converts those chunks into provider-independent vector embeddings, and the Vector Storage subsystem persists those embeddings within a configurable vector database.
 
-The Chunking subsystem converts standardized documents into retrieval-ready chunks without depending on file formats or parsing implementations. The Embedding subsystem then transforms those standardized chunks into provider-independent vector representations that form the foundation for semantic retrieval, vector databases, and Retrieval-Augmented Generation (RAG).
-
-Providers remain responsible only for communicating with external AI services.
-
-This separation enables every subsystem to evolve independently while preserving stable interfaces across the application.
+Each subsystem communicates exclusively through standardized domain models, allowing document processing, embedding generation, vector persistence, retrieval, and future Retrieval-Augmented Generation (RAG) workflows to evolve independently while preserving stable interfaces across the application.
 
 ---
 
@@ -338,13 +331,29 @@ Chunking Strategy
     │
     ▼
 ChunkingResult
+    │
+    ▼
+EmbeddingManager
+    │
+    ▼
+EmbeddingResult
+    │
+    ▼
+VectorStoreMapper
+    │
+    ▼
+VectorStoreManager
+    │
+    ▼
+Vector Store Provider
+    │
+    ▼
+ChromaDB
 ```
 
-The parsing subsystem and the chunking subsystem remain independent.
+The parsing, chunking, embedding, and vector storage subsystems remain architecturally independent.
 
-Document Processing is responsible only for producing standardized `Document` objects.
-
-The Chunking subsystem operates exclusively on those domain objects to generate retrieval-ready chunks for future embedding and retrieval pipelines.
+Each stage owns a single responsibility before producing standardized output for the next subsystem. This separation enables every stage of the knowledge pipeline to evolve independently while establishing stable contracts for future semantic retrieval, Retrieval-Augmented Generation (RAG), and advanced retrieval workflows.
 
 ---
 
@@ -352,33 +361,38 @@ The Chunking subsystem operates exclusively on those domain objects to generate 
 
 The project currently consists of several independent but cooperating subsystems.
 
-```text
+
                            Modular AI Engine
                                    │
-      ┌────────────────────────────┼────────────────────────────────────┐
-      │                            │                                    │
-      ▼                            ▼                                    ▼
- API Layer                   AI Engine                    Knowledge Processing
-      │                            │                                    │
-      ▼                            ▼                                    ▼
-Service Layer            Execution Pipeline              DocumentManager
-      │                            │                                    │
-      ▼                            ▼                                    ▼
- Schemas               Memory / Providers                Chunking Pipeline
-                                                             │
-                                                             ▼
-                                                     Embedding Pipeline
-                                                             │
-                                                             ▼
-                                                    Retrieval Foundation
+        ┌──────────────────────────┼──────────────────────────────────────────┐
+        │                          │                                          │
+        ▼                          ▼                                          ▼
+   API Layer                 AI Engine                          Knowledge Processing
+        │                          │                                          │
+        ▼                          ▼                                          ▼
+ Service Layer            Execution Pipeline                      DocumentManager
+        │                          │                                          │
+        ▼                          ▼                                          ▼
+   Schemas               Memory / Providers                     Chunking Pipeline
+                                                                       │
+                                                                       ▼
+                                                              Embedding Pipeline
+                                                                       │
+                                                                       ▼
+                                                             Vector Storage Pipeline
+                                                                       │
+                                                                       ▼
+                                                             Retrieval Foundation
 
-The AI Engine is responsible for reasoning and orchestration.
+The AI Engine is responsible for conversational reasoning and execution orchestration.
 
-The Document Processing subsystem is responsible for knowledge ingestion.
+The Knowledge Processing subsystem is responsible for transforming uploaded knowledge into retrieval-ready representations.
 
-The Chunking subsystem forms the bridge between document ingestion and embedding generation, while the Embedding subsystem establishes the bridge between knowledge preparation and future retrieval capabilities such as vector databases, semantic search, and Retrieval-Augmented Generation (RAG).
+Document Processing performs ingestion, Chunking prepares retrieval units, the Embedding subsystem generates provider-independent vector representations, and the Vector Storage subsystem persists those vectors for future retrieval.
 
-Stable interfaces between these subsystems allow future capabilities to be added through extension rather than modification.
+Stable interfaces between these subsystems allow semantic retrieval, Retrieval-Augmented Generation (RAG), and future retrieval strategies to be introduced through extension rather than modification.
+
+
 
 ---
 
@@ -415,7 +429,9 @@ Examples include:
 - Tool execution
 - Workflow orchestration
 
-The introduction of the Chunking subsystem reinforces this philosophy by separating document ingestion from retrieval preparation. Future retrieval capabilities will build upon standardized chunks without requiring modifications to either the document processing pipeline or the AI Engine.
+The introduction of the Chunking, Embedding, and Vector Storage subsystems reinforces this philosophy by separating knowledge ingestion, knowledge preparation, vector persistence, and future retrieval into independent architectural concerns.
+
+Future capabilities—including semantic retrieval, Retrieval-Augmented Generation (RAG), workflow orchestration, and intelligent reasoning—can therefore be introduced by extending standardized interfaces rather than restructuring existing components.
 
 
 # 2. Project Structure
@@ -438,6 +454,7 @@ app/
 │
 ├── config/
 ├── document/
+├── embeddings/
 ├── engine/
 │   ├── memory/
 │   ├── pipeline/
@@ -449,6 +466,13 @@ app/
 ├── providers/
 ├── schemas/
 ├── services/
+├── vectorstore/
+│   ├── providers/
+│   ├── factory.py
+│   ├── manager.py
+│   ├── mapper.py
+│   ├── models.py
+│   └── exceptions.py
 │
 └── main.py
 ```
@@ -473,26 +497,29 @@ API Layer
    ▼
 Service Layer
    │
-   ├────────────────────────┐
-   ▼                        ▼
-AI Engine         Knowledge Processing
-   │                        │
-   ▼                        ▼
-Execution          Document Processing
-Pipeline                    │
-   │                        ▼
-   ▼                   Chunking
-Provider                    │
-   │                        ▼
-   ▼                Embedding Generation
-External AI Services         │
-                             ▼
-                    Future Vector Database
+   ├────────────────────────────┐
+   ▼                            ▼
+AI Engine              Knowledge Processing
+   │                            │
+   ▼                            ▼
+Execution Pipeline      Document Processing
+   │                            │
+   ▼                            ▼
+Provider Layer             Chunking
+   │                            │
+   ▼                            ▼
+External AI            Embedding Generation
+Services                       │
+                               ▼
+                         Vector Storage
+                               │
+                               ▼
+                        Future Retrieval
 ```
 
-Each layer communicates only with the layer directly beneath or the subsystem it owns.
+Each layer communicates only with the layer directly beneath it or the subsystem it owns.
 
-This structure preserves clear dependency direction while enabling the document ingestion and AI reasoning pipelines to evolve independently.
+This dependency structure preserves clear architectural boundaries while allowing conversational reasoning and the knowledge-processing pipeline to evolve independently. Standardized domain models isolate each subsystem, enabling new retrieval capabilities to be integrated without introducing unnecessary coupling.
 
 ---
 
@@ -1437,6 +1464,7 @@ Future fields may include:
 * Retrieved documents
 * Chunk references
 * Embeddings
+* Vector search results
 * Tool outputs
 * Workflow state
 * Streaming metadata
@@ -1462,16 +1490,30 @@ This makes the execution flow easier to understand, test, extend, and maintain.
 
 ---
 
-## Current Pipeline
+## Future Pipeline
 
 ```text
 ExecutionPipeline
 
-        │
+        ▼
+
+RoutingStep
 
         ▼
 
 MemoryStep
+
+        ▼
+
+RetrieverStep
+
+        ▼
+
+RAGStep
+
+        ▼
+
+ToolStep
 
         ▼
 
@@ -1789,9 +1831,45 @@ LangChain Model
         ▼
 
 LLM
+
+Knowledge Pipeline
+
+        ▼
+
+EmbeddingManager
+
+        ▼
+
+EmbeddingFactory
+
+        ▼
+
+Embedding Provider
+
+        ▼
+
+VectorStoreMapper
+
+        ▼
+
+VectorStoreManager
+
+        ▼
+
+VectorStoreFactory
+
+        ▼
+
+Configured Vector Database
+
+        ▼
+
+ChromaDB
 ```
 
 No component outside the provider layer should communicate directly with an external AI provider.
+
+Likewise, no component outside the Vector Storage subsystem communicates directly with a vector database implementation. Both provider ecosystems are isolated behind dedicated factories, preserving provider independence across conversational reasoning, embedding generation, and vector persistence.
 
 ---
 
@@ -1872,9 +1950,81 @@ GeminiEmbeddingProvider
 OpenAIEmbeddingProvider
 ```
 
-Separating embedding provider selection from LLM provider selection allows the platform to mix providers freely. For example, Groq may be used for conversational reasoning while Gemini generates vector embeddings, without requiring architectural changes elsewhere in the system.
+Separating embedding provider selection from LLM provider selection allows the platform to mix providers freely.
+
+For example, Groq may handle conversational reasoning while Gemini generates embeddings, and those embeddings may subsequently be persisted by ChromaDB—all without requiring architectural changes elsewhere in the system.
 
 ---
+
+# VectorStoreFactory
+
+## Purpose
+
+Select the configured vector database provider independently from both conversational AI providers and embedding providers.
+
+Configuration originates from:
+
+```text
+.env
+
+↓
+
+VECTOR_STORE_PROVIDER=chromadb
+```
+
+Current provider selection:
+
+```text
+VectorStoreFactory
+
+        ▼
+
+ChromaVectorStoreProvider
+```
+
+Future provider selection:
+
+```text
+VectorStoreFactory
+
+        ▼
+
+ChromaVectorStoreProvider
+
+PineconeVectorStoreProvider
+
+WeaviateVectorStoreProvider
+
+QdrantVectorStoreProvider
+```
+
+Changing vector databases should never require modifications to:
+
+* API
+* Services
+* AI Engine
+* Chunking
+* Embedding generation
+
+Only configuration should change.
+
+# VectorStoreMapper
+
+## Purpose
+
+Transform standardized embedding domain models into provider-independent vector storage models.
+
+Rather than allowing every vector database provider to construct database payloads independently, all transformations are centralized within the mapper.
+
+Responsibilities include:
+
+* Convert EmbeddingResult into VectorBatch
+* Preserve embedding metadata
+* Generate VectorRecord objects
+* Standardize provider input
+* Isolate transformation logic from storage implementations
+
+The mapper ensures that every vector database provider receives identical, standardized input regardless of the embedding provider used upstream.
 
 # Provider Implementations
 
@@ -1896,14 +2046,25 @@ Current Embedding implementations:
 * GeminiEmbeddingProvider
 * OpenAIEmbeddingProvider
 
+Current Vector Database implementation:
+
+* ChromaVectorStoreProvider
+
+Future Vector Database implementations:
+
+* PineconeVectorStoreProvider
+* WeaviateVectorStoreProvider
+* QdrantVectorStoreProvider
+* MilvusVectorStoreProvider
+
 Each provider is responsible only for:
 
 * Authentication
-* Model initialization
-* Streaming implementation
+* Client initialization
 * Provider-specific configuration
+* Communication with external services
 
-Providers should never contain business logic or workflow orchestration.
+Providers should never contain business logic, orchestration logic, mapping logic, or retrieval workflows.
 
 ---
 
@@ -1924,13 +2085,13 @@ API Router
 
         ▼
 
-ChatService
+ChatService / DocumentService
 
         │
 
         ▼
 
-AIEngine
+AI Engine
 
         │
 
@@ -1949,30 +2110,62 @@ MemoryStep   ProviderStep
 
                     ▼
 
-             ProviderFactory
+              ProviderFactory
 
                     │
 
                     ▼
 
-          Configured Provider
+           Configured Provider
 
                     │
 
                     ▼
 
-              LangChain Model
+               LangChain Model
 
                     │
 
                     ▼
 
                   LLM
+
+Document Processing
+
+        │
+
+        ▼
+
+ChunkManager
+
+        │
+
+        ▼
+
+EmbeddingManager
+
+        │
+
+        ▼
+
+VectorStoreManager
+
+        │
+
+        ▼
+
+VectorStoreFactory
+
+        │
+
+        ▼
+
+ChromaDB
 ```
 
 Each component owns only the responsibility directly beneath it.
 
-This ownership model keeps dependencies directional, responsibilities isolated, and future extensions straightforward.
+Conversational reasoning and knowledge processing remain architecturally independent while communicating through standardized domain models. This ownership hierarchy preserves clear dependency direction and allows new providers, vector databases, retrieval strategies, and future reasoning capabilities to be integrated through extension rather than modification.
 
 ---
 
@@ -1985,7 +2178,9 @@ Future capabilities should integrate at clearly defined extension points.
 Examples include:
 
 * New PipelineSteps
-* Additional Providers
+* Additional AI Providers
+* Additional Embedding Providers
+* Additional Vector Database Providers
 * New MemoryStore implementations
 * Retrieval subsystem
 * Tool execution
@@ -2001,13 +2196,13 @@ This principle is fundamental to the long-term maintainability of the Modular AI
 
 # 4. Document Processing Architecture
 
-The **Document Processing subsystem** is responsible for transforming uploaded files into standardized internal representations that serve as the foundation for the platform's knowledge pipeline.
+The **Document Processing subsystem** is responsible for transforming uploaded files into standardized internal representations that serve as the foundation of the platform's knowledge pipeline.
 
-Unlike the AI Engine, which focuses on reasoning, the Document subsystem focuses on **ingestion, validation, parsing, metadata extraction, normalization, and document preparation**.
+Unlike the AI Engine, which focuses on conversational reasoning, the Document subsystem focuses exclusively on **ingestion, validation, parsing, metadata extraction, normalization, and document preparation**.
 
-Once a document has been standardized, responsibility is handed to the independent **Chunking subsystem**, which prepares the document for downstream retrieval workflows.
+Once a document has been standardized, responsibility is handed to the independent **Chunking subsystem**, which prepares retrieval-ready chunks. Those chunks are transformed into vector embeddings by the **Embedding subsystem**, and finally persisted by the **Vector Storage subsystem**.
 
-This separation ensures that document parsing, chunk generation, embedding generation, vector storage, and retrieval remain independent architectural concerns that can evolve without affecting one another.
+This separation ensures that document parsing, chunk generation, embedding generation, vector persistence, semantic retrieval, and Retrieval-Augmented Generation (RAG) remain independent architectural concerns capable of evolving without affecting one another.
 
 ---
 
@@ -2071,20 +2266,30 @@ Document
 ChunkManager
     │
     ▼
-Chunking Strategy
-    │
-    ▼
-Chunk[]
-    │
-    ▼
 ChunkingResult
+    │
+    ▼
+EmbeddingManager
+    │
+    ▼
+EmbeddingResult
+    │
+    ▼
+VectorStoreMapper
+    │
+    ▼
+VectorStoreManager
+    │
+    ▼
+Vector Store Provider
+    │
+    ▼
+ChromaDB
 ```
 
 Each stage owns exactly one responsibility before passing standardized output to the next subsystem.
 
-The document pipeline ends with a standardized `Document` domain model.
-
-The Chunking subsystem begins from that point onward, preparing retrieval-ready chunks without introducing any dependency on file formats or parser implementations.
+The document pipeline therefore extends beyond parsing and chunk generation into embedding generation and persistent vector storage, creating a complete knowledge preparation pipeline while preserving strict subsystem boundaries.
 
 ---
 
@@ -2376,7 +2581,9 @@ Future metadata may additionally include:
 * Token count
 * Document statistics
 
-Keeping document metadata standardized ensures that embeddings, retrieval systems, and Retrieval-Augmented Generation (RAG) can operate consistently across all supported document formats.
+Keeping document metadata standardized ensures that chunk generation, embedding generation, vector persistence, semantic retrieval, and Retrieval-Augmented Generation (RAG) operate consistently across every supported document format.
+
+Metadata therefore remains a stable contract throughout the entire knowledge pipeline.
 
 ---
 
@@ -2468,19 +2675,26 @@ Document
 ChunkManager
       │
       ▼
-Chunking Strategy
+ChunkingResult
       │
       ▼
-ChunkingResult
+EmbeddingManager
+      │
+      ▼
+EmbeddingResult
+      │
+      ▼
+VectorStoreManager
+      │
+      ▼
+ChromaDB
 ```
 
 Each component owns only the responsibility immediately beneath it.
 
-Document Processing owns document ingestion.
+Document Processing owns ingestion, Chunking owns knowledge preparation, Embedding Generation owns semantic vector creation, and Vector Storage owns persistence.
 
-Chunking owns retrieval preparation.
-
-This clear separation keeps both subsystems independently extensible while establishing a stable interface between them.
+This clear separation keeps every subsystem independently extensible while establishing stable contracts for future semantic retrieval and Retrieval-Augmented Generation (RAG).
 
 ---
 
@@ -2524,9 +2738,9 @@ Separate storage, detection, parsing, mapping, and API concerns.
 
 # Integration with the AI Engine
 
-The Document Processing and Chunking subsystems now provide the complete knowledge preparation pipeline for the platform.
+The Knowledge Processing pipeline now consists of four independent architectural subsystems that prepare uploaded knowledge for future AI reasoning.
 
-The current architecture is:
+Current architecture:
 
 ```text
 Upload
@@ -2545,27 +2759,45 @@ Embedding Generation
     │
     ▼
 EmbeddingResult
+    │
+    ▼
+Vector Storage
+    │
+    ▼
+ChromaDB
 ```
 
 Future milestones will extend this pipeline without modifying its existing stages:
 
 ```text
+Document
+      │
+      ▼
+ChunkManager
+      │
+      ▼
 ChunkingResult
       │
       ▼
 EmbeddingManager
       │
       ▼
-EmbeddingFactory
-      │
-      ▼
-Embedding Provider
-      │
-      ▼
 EmbeddingResult
       │
       ▼
-Vector Database
+VectorStoreMapper
+      │
+      ▼
+VectorStoreManager
+      │
+      ▼
+VectorStoreFactory
+      │
+      ▼
+Vector Store Provider
+      │
+      ▼
+ChromaDB
       │
       ▼
 Retriever
@@ -2580,7 +2812,7 @@ RAG
 AI Engine
 ```
 
-Because every subsystem communicates through standardized domain models (`Document`, `ChunkingResult`, and `EmbeddingResult`), future capabilities such as vector databases, semantic retrieval, and Retrieval-Augmented Generation (RAG) can be introduced through extension rather than architectural restructuring.
+Because every subsystem communicates exclusively through standardized domain models (`Document`, `ChunkingResult`, `EmbeddingResult`, and `VectorBatch`), future capabilities such as semantic retrieval, Retrieval-Augmented Generation (RAG), intelligent routing, and advanced reasoning workflows can be introduced through extension rather than architectural restructuring.
 
 ---
 
@@ -2615,24 +2847,24 @@ The subsystem should be reusable by any future feature that requires document in
 
 ### 4. Long-Term Stability
 
-The Document Processing, Chunking, and Embedding subsystems together establish the permanent knowledge preparation pipeline within the Modular AI Engine.
+The Document Processing, Chunking, Embedding, and Vector Storage subsystems together establish the permanent knowledge preparation pipeline within the Modular AI Engine.
 
-Future capabilities—including vector databases, semantic retrieval, Retrieval-Augmented Generation (RAG), and advanced retrieval strategies—should extend this pipeline without requiring significant modifications to existing stages.
+Future capabilities—including semantic retrieval, Retrieval-Augmented Generation (RAG), hybrid search, metadata-aware retrieval, and advanced retrieval strategies—should extend this pipeline without requiring significant modifications to existing stages.
 
-This architecture preserves stable interfaces while minimizing architectural churn as the platform evolves.
+This architecture preserves stable subsystem boundaries while minimizing architectural churn as the platform evolves.
 
 
 
 
 # 5. Chunking Architecture
 
-The **Chunking subsystem** serves as the bridge between document ingestion and knowledge retrieval.
+The **Chunking subsystem** serves as the bridge between document ingestion and semantic knowledge preparation.
 
 Once the Document Processing subsystem has transformed an uploaded file into a standardized `Document` object, responsibility is transferred to the Chunking subsystem.
 
-Rather than operating on uploaded files, chunking works exclusively with domain models, making it completely independent of document formats, parser implementations, and storage mechanisms.
+Rather than operating on uploaded files, chunking works exclusively with domain models, making it completely independent of document formats, parser implementations, storage mechanisms, embedding providers, and vector databases.
 
-This separation ensures that retrieval preparation evolves independently from document ingestion.
+This separation ensures that knowledge preparation evolves independently from document ingestion, vector persistence, and retrieval.
 
 ---
 
@@ -3045,7 +3277,7 @@ Build EmbeddingResult
 
 Only standardized domain models flow between these stages.
 
-The resulting `EmbeddingResult` becomes the stable interface consumed by future vector database integrations.
+The resulting `EmbeddingResult` becomes the stable interface consumed by the Vector Storage subsystem for persistence.
 
 ---
 
@@ -3214,9 +3446,9 @@ Only configuration should change.
 
 # Future Evolution
 
-The current implementation establishes the vector generation stage of the retrieval pipeline.
+The current implementation establishes the complete knowledge preparation pipeline through standardized chunk generation, provider-independent embedding generation, and persistent vector storage.
 
-Future milestones are expected to extend the overall retrieval pipeline with:
+Future milestones are expected to extend the retrieval layer while preserving the existing preparation pipeline.
 
 * Vector databases
 * Similarity search
@@ -3266,7 +3498,299 @@ This keeps the overall platform modular, easier to reason about, and significant
 
 ---
 
-# 6. Engineering Principles & Development Philosophy
+# 7. Vector Storage Architecture
+
+The **Vector Storage subsystem** is responsible for persisting provider-independent embeddings into a configurable vector database.
+
+Unlike the Embedding subsystem, which generates semantic vectors, the Vector Storage subsystem focuses exclusively on persistence, collection management, metadata preservation, and provider abstraction.
+
+This architectural separation establishes vector persistence as an independent subsystem between embedding generation and future retrieval.
+
+---
+
+# Design Philosophy
+
+Embeddings represent semantic knowledge.
+
+Vector databases represent persistent knowledge.
+
+The platform intentionally separates these responsibilities.
+
+This architecture allows:
+
+* Multiple embedding providers
+* Multiple vector databases
+* Independent subsystem evolution
+* Stable retrieval interfaces
+* Provider-independent persistence
+
+Future retrieval systems therefore depend on standardized vector storage abstractions rather than any specific vector database.
+
+---
+
+# Responsibilities
+
+The Vector Storage subsystem is responsible for:
+
+* Persisting embeddings
+* Managing vector collections
+* Preserving embedding metadata
+* Supporting batch insertion
+* Provider-independent vector persistence
+* Vector deletion
+* Collection deletion
+* Collection existence validation
+* Vector counting
+
+It is **not** responsible for:
+
+* Document parsing
+* Chunk generation
+* Embedding generation
+* Semantic retrieval
+* AI reasoning
+* Retrieval-Augmented Generation (RAG)
+
+---
+
+# Vector Storage Lifecycle
+
+```text
+EmbeddingResult
+        │
+        ▼
+VectorStoreMapper
+        │
+        ▼
+VectorBatch
+        │
+        ▼
+VectorStoreManager
+        │
+        ▼
+VectorStoreFactory
+        │
+        ▼
+Configured Provider
+        │
+        ▼
+ChromaDB
+```
+
+Each stage owns one clearly defined responsibility before passing standardized data to the next component.
+
+---
+
+# VectorStoreManager
+
+## Purpose
+
+Coordinate the complete vector persistence workflow.
+
+Responsibilities include:
+
+* Receive EmbeddingResult
+* Coordinate storage operations
+* Delegate provider selection
+* Persist vector batches
+* Manage collections
+* Return standardized storage results
+
+VectorStoreManager never communicates directly with embedding providers.
+
+---
+
+# VectorStoreMapper
+
+## Purpose
+
+Transform standardized embedding models into provider-independent storage models.
+
+Responsibilities include:
+
+* Convert embeddings into VectorRecord objects
+* Build VectorBatch instances
+* Preserve metadata
+* Isolate transformation logic
+* Standardize provider input
+
+The mapper guarantees every vector database provider receives identical input.
+
+---
+
+# VectorStoreFactory
+
+## Purpose
+
+Select the configured vector database implementation.
+
+Current implementation:
+
+* ChromaVectorStoreProvider
+
+Future implementations may include:
+
+* Pinecone
+* Weaviate
+* Qdrant
+* Milvus
+
+Changing vector databases should require configuration changes only.
+
+---
+
+# BaseVectorStoreProvider
+
+Every vector database implementation conforms to the same provider interface.
+
+Responsibilities include:
+
+* Persist vectors
+* Delete vectors
+* Delete collections
+* Check collection existence
+* Count vectors
+* Similarity search
+
+This abstraction isolates the rest of the platform from provider-specific APIs.
+
+---
+
+# ChromaVectorStoreProvider
+
+Current implementation of the vector storage abstraction.
+
+Responsibilities include:
+
+* Collection creation
+* Batch persistence
+* Metadata persistence
+* Vector deletion
+* Collection deletion
+* Similarity search
+* Collection validation
+
+Future providers should implement the same interface without modifying higher-level orchestration.
+
+---
+
+# Domain Models
+
+Current vector storage models include:
+
+* VectorRecord
+* VectorBatch
+
+These models establish standardized contracts between embedding generation and vector persistence.
+
+---
+
+# Object Relationships
+
+```text
+EmbeddingManager
+        │
+        ▼
+EmbeddingResult
+        │
+        ▼
+VectorStoreMapper
+        │
+        ▼
+VectorStoreManager
+        │
+        ▼
+VectorStoreFactory
+        │
+        ▼
+BaseVectorStoreProvider
+        │
+        ▼
+ChromaVectorStoreProvider
+        │
+        ▼
+ChromaDB
+```
+
+Every component owns exactly one architectural responsibility.
+
+---
+
+# Design Patterns
+
+The subsystem intentionally follows several established software engineering patterns.
+
+## Factory Pattern
+
+Used by:
+
+* VectorStoreFactory
+
+Purpose:
+
+Select the configured vector database provider.
+
+---
+
+## Mapper Pattern
+
+Used by:
+
+* VectorStoreMapper
+
+Purpose:
+
+Separate transformation logic from storage implementations.
+
+---
+
+## Strategy / Provider Pattern
+
+Used by:
+
+* BaseVectorStoreProvider
+
+Purpose:
+
+Support multiple interchangeable vector database implementations.
+
+---
+
+# Architectural Benefits
+
+Separating vector persistence into its own subsystem provides several long-term advantages.
+
+## Separation of Concerns
+
+Embedding generation and vector persistence evolve independently.
+
+---
+
+## Extensibility
+
+Supporting a new vector database requires implementing only a new provider.
+
+---
+
+## Provider Independence
+
+Embedding providers and vector databases can be mixed freely.
+
+---
+
+## Testability
+
+Storage operations can be tested independently from embedding generation.
+
+---
+
+## Long-Term Stability
+
+Future capabilities—including semantic retrieval, hybrid search, Retrieval-Augmented Generation (RAG), reranking, and advanced retrieval strategies—can extend the platform without restructuring the existing knowledge preparation pipeline.
+
+---
+
+# 7. Engineering Principles & Development Philosophy
 
 Software architecture is not defined solely by classes and folders—it is shaped by the engineering principles that guide every design decision.
 
