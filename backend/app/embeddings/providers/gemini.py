@@ -83,3 +83,20 @@ class GeminiEmbeddingProvider(BaseEmbeddingProvider):
             document_id=chunking_result.document_id,
             embeddings=embeddings,
         )
+
+    async def embed_query(
+        self,
+        query: str,
+    ) -> list[float]:
+        """
+        Generate embedding for a query string.
+        """
+        try:
+            return await asyncio.to_thread(
+                self._embeddings.embed_query,
+                query,
+            )
+        except Exception as exc:
+            raise EmbeddingProviderError(
+                "Failed to generate Gemini query embedding."
+            ) from exc

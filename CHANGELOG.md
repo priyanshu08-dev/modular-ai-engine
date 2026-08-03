@@ -766,33 +766,194 @@ ChromaDB
 
 ---
 
+# Version v0.6.0
 
+> Semantic Retrieval Platform.
+
+This release transformed the project from a knowledge ingestion platform into a semantic knowledge retrieval platform by introducing a provider-independent Retrieval subsystem capable of performing semantic similarity search over persisted document embeddings.
+
+---
+
+## Milestone 14 — Retrieval Pipeline
+
+### Added
+
+#### Retrieval Subsystem
+
+* Retrieval module.
+* RetrievalManager orchestration layer.
+* Retrieval strategy architecture.
+* BaseRetrievalStrategy abstraction.
+* VectorSearchStrategy implementation.
+* RetrievalMapper transformation layer.
+* Retrieval exception hierarchy.
+* RetrievedChunk domain model.
+* RetrievalRequest domain model.
+* RetrievalResult domain model.
+
+#### Query Embedding
+
+* Query embedding support through `EmbeddingManager.embed_query()`.
+* `embed_query()` abstraction added to `BaseEmbeddingProvider`.
+* Gemini query embedding implementation.
+* OpenAI query embedding implementation.
+* Provider-independent query vector generation.
+
+#### Retrieval API
+
+* RetrievalService.
+* Retrieval API endpoint (`POST /retrieval/search`).
+* Retrieval request schema.
+* Retrieval response schema.
+* Retrieval subsystem package exports.
+
+#### Retrieval Features
+
+* Semantic vector similarity search.
+* Configurable `top_k` retrieval.
+* Configurable similarity score threshold.
+* Optional document-level filtering.
+* Similarity score normalization.
+* Provider-independent retrieval workflow.
+* Retrieval playground integration testing.
+
+---
+
+### Changed
+
+* Extended the Embedding subsystem to support both batch document embeddings and single-query embeddings.
+* Introduced provider-independent semantic retrieval while preserving vector storage abstraction.
+* Integrated the Retrieval subsystem with the existing Embedding and Vector Storage subsystems without modifying their responsibilities.
+* Added a dedicated retrieval workflow alongside the existing knowledge ingestion pipeline.
+* Exposed semantic retrieval through a dedicated REST API.
+
+---
+
+### Improved
+
+* Established a complete query-to-retrieval pipeline.
+* Decoupled semantic retrieval from vector database implementations.
+* Standardized retrieval outputs through provider-independent domain models.
+* Improved extensibility through a pluggable Strategy Pattern architecture.
+* Added configurable retrieval filtering using similarity score thresholds.
+* Added optional document-scoped semantic search.
+* Preserved asynchronous execution by offloading synchronous provider operations to background threads.
+
+---
+
+### Refactored
+
+* Extended the Embedding subsystem with reusable query embedding capabilities.
+* Centralized retrieval orchestration within RetrievalManager.
+* Isolated vector similarity search into dedicated retrieval strategies.
+* Separated ChromaDB response mapping into RetrievalMapper.
+* Standardized retrieval domain models independently of vector database implementations.
+
+---
+
+### Fixed
+
+* Added validation for empty retrieval queries.
+* Standardized semantic retrieval responses across retrieval providers.
+* Improved similarity score consistency through normalized score calculation.
+* Ensured retrieval results remain sorted in descending similarity order.
+
+---
+
+### Architecture Impact
+
+The project now includes a complete provider-independent semantic retrieval pipeline.
+
+Unlike the Knowledge Ingestion Pipeline, which persists document embeddings into ChromaDB, the Retrieval subsystem introduces a dedicated **read path** that transforms user queries into vector embeddings, performs semantic similarity search over persisted knowledge, and returns standardized retrieval results.
+
+The Retrieval subsystem remains completely independent of both the AI Engine and the Knowledge Processing Pipeline, preserving the project's layered architecture while establishing the foundation required for Retrieval-Augmented Generation (RAG).
+
+```text
+User Query
+      │
+      ▼
+EmbeddingManager
+      │
+      ▼
+Query Embedding
+      │
+      ▼
+RetrievalManager
+      │
+      ▼
+VectorSearchStrategy
+      │
+      ▼
+VectorStoreManager
+      │
+      ▼
+VectorStoreFactory
+      │
+      ▼
+Vector Store Provider
+      │
+      ▼
+ChromaDB
+      │
+      ▼
+RetrievalMapper
+      │
+      ▼
+RetrievedChunk[]
+      │
+      ▼
+RetrievalResult
+```
+
+This milestone completes the semantic retrieval layer of the platform and prepares the architecture for the next milestone, where retrieved knowledge will be injected into AI prompts to implement Retrieval-Augmented Generation (RAG).
+
+---
 
 # Summary
 
 ## Versions Included
 
 ✅ v0.1.0 — Foundation
+
 ✅ v0.2.0 — AI Engine Core
+
 ✅ v0.3.0 — Conversational Intelligence
+
 ✅ v0.4.0 — Knowledge Ingestion
+
 ✅ v0.5.0 — Knowledge Preparation
+
+✅ v0.6.0 — Semantic Retrieval Platform
 
 ## Milestones Covered
 
 ✅ M1 — Project Foundation
+
 ✅ M2 — Provider Abstraction
+
 ✅ M3 — Chat API
+
 ✅ M4 — AI Engine
+
 ✅ M5 — Health Check & Streaming Foundation
+
 ✅ M6 — Project Documentation
+
 ✅ M7 — Execution Pipeline
+
 ✅ M8 — Conversation Memory & LangChain Message Pipeline
+
 ✅ M9 — Streaming Responses
+
 ✅ M10 — Document Upload & Processing
+
 ✅ M11 — Chunking Pipeline
+
 ✅ M12 — Embedding Generation
+
 ✅ M13 — ChromaDB Integration
+
+✅ M14 — Retrieval Pipeline
 
 
 ---

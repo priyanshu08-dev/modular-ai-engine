@@ -105,6 +105,9 @@ Currently supports:
 - Automatic metadata extraction
 - UUID-based upload storage
 - Standardized document representation
+
+### Knowledge Processing Pipeline
+
 - Recursive document chunking
 - Configurable chunk size and overlap
 - Configurable separator hierarchy
@@ -118,6 +121,28 @@ Currently supports:
 - Provider-independent vector storage architecture
 - Batch embedding persistence
 - Vector metadata persistence
+- Provider-independent semantic retrieval
+- Query embedding generation
+- Configurable semantic similarity search
+- Configurable similarity score threshold
+- Optional document-scoped retrieval
+- Standardized retrieval results
+
+---
+
+## Retrieval
+
+Currently supports:
+
+- Provider-independent retrieval subsystem
+- Query embedding generation
+- Semantic vector similarity search
+- Configurable top-k retrieval
+- Similarity score normalization
+- Configurable score threshold
+- Optional document-scoped retrieval
+- Standardized retrieval models
+- Retrieval REST API
 
 ---
 
@@ -153,6 +178,8 @@ GET  /health
 POST /chat
 
 POST /documents/parse
+
+POST /retrieval/search
 ```
 
 ---
@@ -196,6 +223,7 @@ app/
 ├── embeddings/
 ├── engine/
 ├── providers/
+├── retrieval/
 ├── schemas/
 ├── services/
 ├── vectorstore/
@@ -274,7 +302,7 @@ http://127.0.0.1:8000/redoc
 **Version**
 
 ```
-v0.5.0
+v0.6.0
 ```
 
 **Status**
@@ -293,8 +321,13 @@ The foundational architecture of the Modular AI Engine now includes:
 - Provider-Independent Embedding Pipeline
 - Provider-Independent Vector Storage Pipeline
 - Persistent ChromaDB Integration
+- Provider-Independent Semantic Retrieval
+- Retrieval API
+- Query Embedding Pipeline
 
-The engine now supports a complete knowledge preparation workflow that transforms uploaded documents into standardized document objects, retrieval-ready chunks, provider-independent vector embeddings, and persistent vector storage, establishing the foundation for semantic retrieval, Retrieval-Augmented Generation (RAG), and intelligent knowledge-based reasoning.
+The engine now supports a complete provider-independent knowledge pipeline that transforms uploaded documents into standardized document objects, retrieval-ready chunks, semantic vector embeddings, persistent vector storage, and semantic retrieval capabilities.
+
+With the introduction of the Retrieval subsystem, the platform can now transform user queries into semantic embeddings, search persisted knowledge using vector similarity, and return standardized retrieval results. This establishes the complete retrieval layer required for Retrieval-Augmented Generation (RAG) while preserving the project's modular and provider-independent architecture.
 
 For detailed project progress and milestone tracking, see **ROADMAP.md**.
 
@@ -320,14 +353,15 @@ This separation keeps the documentation maintainable while avoiding duplication 
 The long-term objective is to evolve Modular AI Engine from a reusable AI backend into a complete AI reasoning platform capable of supporting:
 
 - Multiple AI providers
-- Persistent vector storage
-- Semantic retrieval
+- Hybrid semantic retrieval
 - Retrieval-Augmented Generation (RAG)
 - Workflow orchestration
 - Tool Calling
 - Multi-Agent Systems
 - Intelligent request routing
 - Domain-specific copilots
+- LangGraph workflow orchestration
+- Scalable AI execution
 - Scalable AI execution
 
 The architecture is intentionally designed so these capabilities can be introduced incrementally without major changes to the existing codebase.

@@ -12,7 +12,7 @@ The roadmap is intentionally adaptive. As the architecture evolves, milestones m
 
 # Current Version
 
-**v0.5.0**
+**v0.6.0**
 
 ---
 
@@ -28,33 +28,33 @@ The roadmap is intentionally adaptive. As the architecture evolves, milestones m
 
 ## Current Milestone
 
-⏳ **M14 — Retrieval Pipeline**
+⏳ **M15 — Retrieval-Augmented Generation (RAG)**
 
 ## Last Completed Milestone
 
-✅ **M13 — ChromaDB Integration**
+✅ **M14 — Retrieval Pipeline**
 
 ---
 
 # Overall Progress
 
 ```text
-████████████████░░░░░
+█████████████████░░░░
 
 Phase Progress
 
 Phase 1  ✅ 100%
 Phase 2  ✅ 100%
-Phase 3  ✅ 80%
+Phase 3  ✅ 92%
 Phase 4  ⬜ 0%
 Phase 5  ⬜ 0%
 
-Overall Project ≈ 76%
+Overall Project ≈ 81%
 ```
 
-The foundational architecture of the Modular AI Engine now includes a complete knowledge preparation pipeline consisting of document parsing, retrieval-ready chunk generation, provider-independent embedding generation, and persistent vector storage.
+The Modular AI Engine now includes a complete provider-independent knowledge pipeline capable of ingesting, processing, embedding, storing, and semantically retrieving knowledge from uploaded documents.
 
-Future development focuses on semantic retrieval, Retrieval-Augmented Generation (RAG), workflow orchestration, intelligent tooling, and production readiness while preserving the project's modular, provider-independent architecture.
+With the Retrieval subsystem now complete, future development focuses on Retrieval-Augmented Generation (RAG), context-aware AI responses, workflow orchestration, intelligent tooling, and production readiness while preserving the project's modular, provider-independent architecture.
 
 ---
 
@@ -191,15 +191,26 @@ Enable the AI Engine to understand, retrieve, and reason over uploaded knowledge
 
 **Status**
 
-⏳ Next
+✅ Completed
 
-### Objectives
+### Delivered
 
-- Semantic retrieval
-- Top-K search
-- Metadata-aware retrieval
-- Retrieval abstraction
-- Configurable ranking
+- RetrievalManager orchestration layer
+- Retrieval strategy architecture
+- BaseRetrievalStrategy abstraction
+- VectorSearchStrategy implementation
+- RetrievalMapper transformation layer
+- Provider-independent Retrieval subsystem
+- Query embedding support
+- Semantic vector similarity search
+- Configurable Top-K retrieval
+- Similarity score normalization
+- Optional document-scoped retrieval
+- RetrievalRequest abstraction
+- RetrievedChunk abstraction
+- RetrievalResult abstraction
+- Retrieval REST API
+- End-to-end retrieval integration testing
 
 ---
 
@@ -207,12 +218,14 @@ Enable the AI Engine to understand, retrieve, and reason over uploaded knowledge
 
 ### Objectives
 
-- Context retrieval
-- Prompt augmentation
-- Context-aware AI responses
-- Retrieval orchestration
+- Retrieval-Augmented prompt construction
+- Context injection into the AI Engine
+- Retrieval-aware execution pipeline
+- Prompt context management
 - Source attribution
-- Configurable retrieval strategies
+- Grounded AI responses
+- Configurable RAG workflows
+- Hallucination reduction
 
 ---
 
@@ -357,6 +370,9 @@ The first stable release should provide a production-grade modular AI backend ca
 - Provider-Independent Embedding Pipeline
 - Persistent ChromaDB Vector Storage
 - Provider-Independent Vector Storage Pipeline
+- Provider-Independent Retrieval Pipeline
+- Query Embedding Pipeline
+- Semantic Vector Retrieval
 
 ### Planned
 
@@ -371,19 +387,27 @@ The first stable release should provide a production-grade modular AI backend ca
 ### Completed
 
 - Retrieval-ready document chunking
-- Chunk orchestration pipeline
 - Provider-independent embedding generation
 - Batch embedding pipeline
-- Persistent vector storage
-- ChromaDB integration
-- Vector storage abstraction
-- Vector metadata persistence
+- Persistent ChromaDB vector storage
+- Provider-independent vector storage abstraction
+- Query embedding generation
+- Provider-independent Retrieval subsystem
+- Retrieval strategy architecture
+- Semantic vector similarity search
+- Configurable Top-K retrieval
+- Similarity score normalization
+- Retrieval REST API
+- Retrieval orchestration layer
+- Standardized retrieval models
 
 ### Planned
 
-- Semantic Retrieval
-- Retrieval Pipeline
 - Retrieval-Augmented Generation (RAG)
+- Context-aware prompt construction
+- Source attribution
+- Hybrid retrieval
+- Metadata-aware ranking
 
 ---
 
@@ -396,6 +420,7 @@ The platform should support:
 - Workflow Routing
 - Multi-Agent Systems
 - Autonomous Reasoning
+- Advanced Retrieval-Augmented Generation (RAG)
 
 ---
 

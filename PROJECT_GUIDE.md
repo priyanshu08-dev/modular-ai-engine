@@ -77,31 +77,34 @@ The current architecture separates application concerns into independent layers.
                        │
                        ▼
                  Service Layer
-                ┌────────┴──────────────────────────────┐
-                ▼                                       ▼
-           AI Engine                         Knowledge Processing
-                │                                       │
-                ▼                                       ▼
-      Execution Pipeline                   Document Processing
-                │                                       │
-                ▼                                       ▼
-          Provider Layer                         Chunking
-                │                                       │
-                ▼                                       ▼
-              LLM                          Embedding Generation
-                                                        │
-                                                        ▼
-                                               Vector Storage
-                                                        │
-                                                        ▼
-                                                 Future Retrieval
+                ┌────────┴──────────────────────────────────────────────────────────────┐
+                ▼                                                                       ▼
+           AI Engine                                                         Knowledge Pipeline
+                │                                                                       │
+                ▼                                                                       ▼
+      Execution Pipeline                                                    Document Processing
+                │                                                                       │
+                ▼                                                                       ▼
+          Provider Layer                                                          Chunking
+                │                                                                       │
+                ▼                                                                       ▼
+              LLM                                                           Embedding Generation
+                                                                                     │
+                                                                                     ▼
+                                                                              Vector Storage
+                                                                                     │
+                                                                                     ▼
+                                                                                Retrieval
+                                                                                     │
+                                                                                     ▼
+                                                                       RAG (future)
 ```
 
-The AI Engine orchestrates conversational reasoning while remaining provider-independent.
+The AI Engine orchestrates conversational reasoning while remaining completely provider-independent.
 
-The Knowledge Processing pipeline independently transforms uploaded documents into retrieval-ready knowledge through a sequence of specialized subsystems. Document Processing produces standardized `Document` objects, the Chunking subsystem generates retrieval-ready chunks, the Embedding subsystem converts those chunks into provider-independent vector embeddings, and the Vector Storage subsystem persists those embeddings within a configurable vector database.
+The Knowledge Pipeline independently transforms uploaded documents into searchable knowledge through a sequence of specialized subsystems. Document Processing produces standardized `Document` objects, the Chunking subsystem generates retrieval-ready chunks, the Embedding subsystem converts those chunks into provider-independent vector embeddings, the Vector Storage subsystem persists those embeddings, and the Retrieval subsystem performs provider-independent semantic search over persisted knowledge.
 
-Each subsystem communicates exclusively through standardized domain models, allowing document processing, embedding generation, vector persistence, retrieval, and future Retrieval-Augmented Generation (RAG) workflows to evolve independently while preserving stable interfaces across the application.
+Each subsystem communicates exclusively through standardized domain models, allowing ingestion, embedding generation, vector persistence, semantic retrieval, and future Retrieval-Augmented Generation (RAG) workflows to evolve independently while preserving stable architectural boundaries.
 
 ---
 
@@ -209,14 +212,14 @@ ExecutionContext
         ▼
 ExecutionPipeline
         │
-        ├───────────────┐
-        ▼               │
-MemoryStep              │
-        ▼               │
-ProviderStep            │
-        │               │
-        ├── execute()   │
-        └── stream()    │
+        ├───────────────────────┐
+        ▼                       │
+MemoryStep                      │
+        ▼                       │
+ProviderStep                    │
+        │                       │
+        ├── execute()           │
+        └── stream()            │
         ▼
 ProviderFactory
         │
@@ -231,6 +234,31 @@ StreamingResponse / Standard Response
         │
         ▼
 Client
+
+(Independent Knowledge Pipeline)
+
+Client
+        │
+        ▼
+Document API
+        │
+        ▼
+DocumentService
+        │
+        ▼
+DocumentManager
+        │
+        ▼
+ChunkManager
+        │
+        ▼
+EmbeddingManager
+        │
+        ▼
+VectorStoreManager
+        │
+        ▼
+RetrievalManager
 ```
 
 The AI Engine serves as the orchestration layer and delegates work to the Execution Pipeline.
@@ -364,33 +392,36 @@ The project currently consists of several independent but cooperating subsystems
 
                            Modular AI Engine
                                    │
-        ┌──────────────────────────┼──────────────────────────────────────────┐
-        │                          │                                          │
-        ▼                          ▼                                          ▼
-   API Layer                 AI Engine                          Knowledge Processing
-        │                          │                                          │
-        ▼                          ▼                                          ▼
- Service Layer            Execution Pipeline                      DocumentManager
-        │                          │                                          │
-        ▼                          ▼                                          ▼
-   Schemas               Memory / Providers                     Chunking Pipeline
-                                                                       │
-                                                                       ▼
-                                                              Embedding Pipeline
-                                                                       │
-                                                                       ▼
-                                                             Vector Storage Pipeline
-                                                                       │
-                                                                       ▼
-                                                             Retrieval Foundation
+         ┌─────────────────────────┼─────────────────────────────────────────────┐
+         │                         │                                             │
+         ▼                         ▼                                             ▼
+    API Layer                AI Engine                                Knowledge Pipeline
+         │                         │                                             │
+         ▼                         ▼                                             ▼
+   Service Layer          Execution Pipeline                          Document Processing
+         │                         │                                             │
+         ▼                         ▼                                             ▼
+      Schemas            Memory / Providers                               Chunking
+                                                                              │
+                                                                              ▼
+                                                                      Embedding Pipeline
+                                                                              │
+                                                                              ▼
+                                                                      Vector Storage Pipeline
+                                                                              │
+                                                                              ▼
+                                                                       Retrieval Pipeline
+                                                                              │
+                                                                              ▼
+                                                                           Future RAG
 
 The AI Engine is responsible for conversational reasoning and execution orchestration.
 
-The Knowledge Processing subsystem is responsible for transforming uploaded knowledge into retrieval-ready representations.
+The Knowledge Pipeline is responsible for transforming uploaded documents into searchable knowledge. Document Processing performs ingestion, Chunking prepares retrieval units, the Embedding subsystem generates provider-independent vector representations, the Vector Storage subsystem persists those vectors, and the Retrieval subsystem performs provider-independent semantic search over the stored knowledge.
 
-Document Processing performs ingestion, Chunking prepares retrieval units, the Embedding subsystem generates provider-independent vector representations, and the Vector Storage subsystem persists those vectors for future retrieval.
+Retrieval is intentionally implemented as a separate knowledge subsystem, not as part of the AI Engine execution path. Future reasoning workflows may consume retrieval results, but the current architecture keeps semantic search isolated from conversational execution.
 
-Stable interfaces between these subsystems allow semantic retrieval, Retrieval-Augmented Generation (RAG), and future retrieval strategies to be introduced through extension rather than modification.
+Stable interfaces between these subsystems allow Retrieval-Augmented Generation (RAG), hybrid retrieval, intelligent routing, and future reasoning capabilities to be introduced through extension rather than modification.
 
 
 
@@ -464,6 +495,8 @@ app/
 │   └── core.py
 │
 ├── providers/
+├── rag/
+├── retrieval/
 ├── schemas/
 ├── services/
 ├── vectorstore/
@@ -514,7 +547,7 @@ Services                       │
                          Vector Storage
                                │
                                ▼
-                        Future Retrieval
+                           Retrieval
 ```
 
 Each layer communicates only with the layer directly beneath it or the subsystem it owns.
@@ -597,7 +630,29 @@ This separation provides several advantages:
 * Future provider expansion
 * Stable downstream interfaces
 
-Future vector database integrations should consume standardized `EmbeddingResult` objects rather than interacting directly with embedding providers.
+Future vector database integrations and retrieval systems should consume standardized `EmbeddingResult` objects rather than interacting directly with embedding providers.
+
+---
+
+## retrieval/
+
+### Purpose
+
+The retrieval package provides the independent semantic search subsystem for the knowledge pipeline.
+
+It is intentionally separated from the AI Engine, allowing the platform to add search capabilities without coupling retrieval workflows into conversational execution.
+
+---
+
+### Responsibilities
+
+* Consume standardized `ChunkingResult` and `EmbeddingResult` objects
+* Query vector storage for semantic search
+* Apply retrieval strategies and metadata filtering
+* Return retrieval results to services or future reasoning workflows
+* Preserve provider-independence for retriever implementations
+
+Retrieval remains an independent knowledge subsystem. It is not currently integrated into the AI Engine's execution pipeline, but it provides the foundation for future Retrieval-Augmented Generation (RAG) and search-enhanced reasoning.
 
 ---
 
@@ -664,7 +719,7 @@ Typical configuration includes:
 * Active provider
 * API keys
 * Upload settings
-* Future retrieval configuration
+* Retrieval configuration
 
 All application components should import configuration from this package.
 
@@ -1249,6 +1304,8 @@ The following diagram illustrates how the primary packages interact during execu
           │                             │
           ▼                             ▼
     AI Providers            Future Vector Database
+
+```
 
 ### Rule 1 — One Responsibility Per Package
 
@@ -2266,6 +2323,9 @@ Document
 ChunkManager
     │
     ▼
+Chunking Strategy
+    │
+    ▼
 ChunkingResult
     │
     ▼
@@ -2285,11 +2345,17 @@ Vector Store Provider
     │
     ▼
 ChromaDB
+    │
+    ▼
+RetrievalManager
+    │
+    ▼
+RetrievalResult
 ```
 
-Each stage owns exactly one responsibility before passing standardized output to the next subsystem.
+The parsing, chunking, embedding, vector storage, and retrieval subsystems remain architecturally independent.
 
-The document pipeline therefore extends beyond parsing and chunk generation into embedding generation and persistent vector storage, creating a complete knowledge preparation pipeline while preserving strict subsystem boundaries.
+Each stage owns exactly one responsibility before producing standardized output for the next subsystem. This separation enables every stage of the knowledge pipeline to evolve independently while establishing stable contracts for semantic retrieval, Retrieval-Augmented Generation (RAG), hybrid retrieval, and future knowledge reasoning workflows.
 
 ---
 
@@ -4079,7 +4145,7 @@ AI Engine     Document Processing
 Providers     Chunking
       │             │
       ▼             ▼
-External AI    Future Retrieval
+External AI    Retrieval
 ```
 
 Lower layers must never import higher layers.
@@ -4329,19 +4395,19 @@ Streaming
 Document Processing
       │
       ▼
-Chunking              ✅ Completed
+Chunking              
       │
       ▼
-Embedding Generation  ← Current Next Milestone
+Embedding Generation  
       │
       ▼
-Vector Database
+Vector Database       ✅ Completed
       │
       ▼
-Retriever
+Retriever             ✅ Completed
       │
       ▼
-Retrieval Pipeline
+Retrieval Pipeline   ← Current Next Milestone
       │
       ▼
 Retrieval-Augmented Generation (RAG)

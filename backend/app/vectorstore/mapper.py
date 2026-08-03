@@ -62,6 +62,7 @@ class VectorStoreMapper:
                         "provider": embedding.metadata.provider,
                         "model": embedding.metadata.model,
                         "dimensions": embedding.metadata.dimensions,
+                        "filename": chunk.metadata.source or "unknown",
                     },
                 )
             )

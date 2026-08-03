@@ -69,6 +69,7 @@ class ChromaVectorStoreProvider(BaseVectorStoreProvider):
         collection_name: str,
         query_embedding: list[float],
         limit: int = 5,
+        where: dict[str, object] | None = None,
     ) -> list[dict]:
         collection = self._get_collection(collection_name)
 
@@ -77,6 +78,7 @@ class ChromaVectorStoreProvider(BaseVectorStoreProvider):
                 collection.query,
                 query_embeddings=[query_embedding],
                 n_results=limit,
+                where=where,
             )
         except Exception as exc:
             raise VectorSearchError(

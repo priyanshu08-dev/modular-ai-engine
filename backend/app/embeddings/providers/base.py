@@ -21,3 +21,13 @@ class BaseEmbeddingProvider(ABC):
         supplied ChunkingResult.
         """
         pass
+
+    @abstractmethod
+    async def embed_query(
+        self,
+        query: str,
+    ) -> list[float]:
+        """
+        Generate a single vector embedding for a search query string.
+        """
+        pass

@@ -29,9 +29,14 @@ class BaseVectorStoreProvider(ABC):
         collection_name: str,
         query_embedding: list[float],
         limit: int = 5,
+        where: dict[str, object] | None = None,
     ) -> list[dict]:
         """
         Perform similarity search.
+
+        The optional `where` filter is used to restrict results at the
+        vector database level, such as returning only vectors from a
+        specific document.
         """
 
 
