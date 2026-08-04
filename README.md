@@ -89,6 +89,10 @@ The engine is designed to support AI-powered applications across multiple domain
 - LangChain integration
 - Conversation ID support
 - Provider-independent architecture
+- Retrieval-Augmented Generation (RAG)
+- Context-aware prompt construction
+- Source attribution support
+- Configurable grounded reasoning
 
 ---
 
@@ -106,7 +110,7 @@ Currently supports:
 - UUID-based upload storage
 - Standardized document representation
 
-### Knowledge Processing Pipeline
+### Knowledge Pipeline
 
 - Recursive document chunking
 - Configurable chunk size and overlap
@@ -127,22 +131,40 @@ Currently supports:
 - Configurable similarity score threshold
 - Optional document-scoped retrieval
 - Standardized retrieval results
+- End-to-end document ingestion
+- Automated vector persistence
 
 ---
 
-## Retrieval
+## Knowledge Retrieval & RAG
 
 Currently supports:
 
-- Provider-independent retrieval subsystem
+- Provider-independent Retrieval subsystem
 - Query embedding generation
 - Semantic vector similarity search
-- Configurable top-k retrieval
-- Similarity score normalization
-- Configurable score threshold
+- Configurable Top-K retrieval
+- Configurable similarity score threshold
 - Optional document-scoped retrieval
 - Standardized retrieval models
 - Retrieval REST API
+- Retrieval-Augmented Generation (RAG)
+- Context-aware prompt construction
+- Grounded AI responses
+- Source attribution
+- Configurable runtime RAG controls
+
+---
+
+## Knowledge Ingestion
+
+Currently supports:
+
+- End-to-end document ingestion
+- Parse → Chunk → Embed → Store workflow
+- Automatic vector persistence
+- Provider-independent ingestion pipeline
+- Configurable ingestion through REST API
 
 ---
 
@@ -178,6 +200,8 @@ GET  /health
 POST /chat
 
 POST /documents/parse
+
+POST /documents/ingest
 
 POST /retrieval/search
 ```
@@ -302,7 +326,7 @@ http://127.0.0.1:8000/redoc
 **Version**
 
 ```
-v0.6.0
+v0.7.0
 ```
 
 **Status**
@@ -324,10 +348,16 @@ The foundational architecture of the Modular AI Engine now includes:
 - Provider-Independent Semantic Retrieval
 - Retrieval API
 - Query Embedding Pipeline
+- Retrieval-Augmented Generation (RAG)
+- Context-aware Prompt Construction
+- Source Attribution
+- End-to-End Document Ingestion
 
-The engine now supports a complete provider-independent knowledge pipeline that transforms uploaded documents into standardized document objects, retrieval-ready chunks, semantic vector embeddings, persistent vector storage, and semantic retrieval capabilities.
+The engine now supports a complete provider-independent knowledge pipeline capable of transforming uploaded documents into standardized document objects, retrieval-ready chunks, semantic vector embeddings, persistent vector storage, semantic retrieval, and Retrieval-Augmented Generation (RAG).
 
-With the introduction of the Retrieval subsystem, the platform can now transform user queries into semantic embeddings, search persisted knowledge using vector similarity, and return standardized retrieval results. This establishes the complete retrieval layer required for Retrieval-Augmented Generation (RAG) while preserving the project's modular and provider-independent architecture.
+By integrating semantic retrieval directly into the AI Execution Pipeline, the platform now produces grounded, context-aware responses using retrieved document knowledge while preserving provider independence across AI providers, embedding providers, and vector database implementations.
+
+The architecture now supports end-to-end document ingestion, semantic retrieval, configurable Retrieval-Augmented Generation, and source attribution, establishing the foundation for future workflow orchestration, tool calling, and intelligent multi-agent reasoning.
 
 For detailed project progress and milestone tracking, see **ROADMAP.md**.
 
@@ -354,14 +384,14 @@ The long-term objective is to evolve Modular AI Engine from a reusable AI backen
 
 - Multiple AI providers
 - Hybrid semantic retrieval
-- Retrieval-Augmented Generation (RAG)
+- Advanced Retrieval-Augmented Generation (RAG)
 - Workflow orchestration
 - Tool Calling
 - Multi-Agent Systems
 - Intelligent request routing
 - Domain-specific copilots
 - LangGraph workflow orchestration
-- Scalable AI execution
+- Intelligent planning
 - Scalable AI execution
 
 The architecture is intentionally designed so these capabilities can be introduced incrementally without major changes to the existing codebase.

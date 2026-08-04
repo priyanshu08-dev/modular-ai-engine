@@ -181,9 +181,19 @@ without requiring changes to the surrounding application architecture.
 
 ## Versions Included
 
-* ✅ v0.1.0
-* ✅ v0.2.0
-* ✅ v0.3.0
+* ✅ v0.1.0 — Foundation
+
+* ✅ v0.2.0 — AI Engine Core
+
+* ✅ v0.3.0 — Conversational Intelligence
+
+* ✅ v0.4.0 — Knowledge Ingestion
+
+* ✅ v0.5.0 — Knowledge Preparation
+
+* ✅ v0.6.0 — Semantic Retrieval Platform
+
+* ✅ v0.7.0 — Grounded Conversational Intelligence
 
 ## Milestones Covered
 
@@ -193,7 +203,7 @@ without requiring changes to the surrounding application architecture.
 * ✅ M4 — Provider Abstraction
 * ✅ M5 — AI Engine
 
-The next section continues with **Version v0.4.0 through Version v0.6.0**, covering:
+The next section continues with **Version v0.4.0 through Version v0.7.0**, covering:
 
 * M6 — Project Documentation
 * M7 — Execution Pipeline
@@ -461,6 +471,158 @@ without requiring significant changes to the existing document processing archit
 
 ---
 
+# Version v0.7.0
+
+> Grounded Conversational Intelligence.
+
+This release transforms the platform from a semantic retrieval system into a complete Retrieval-Augmented Generation (RAG) platform by integrating semantic retrieval directly into the AI execution pipeline while preserving the project's provider-independent architecture.
+
+---
+
+## Milestone 15 — Retrieval-Augmented Generation (RAG)
+
+### Added
+
+#### RAG Subsystem
+
+* RAG module.
+* RAGManager orchestration layer.
+* ContextFormatter.
+* RAGPromptBuilder.
+* RAGContext domain model.
+* SourceAttribution domain model.
+* RAG exception hierarchy.
+
+#### AI Execution Pipeline
+
+* RAGStep pipeline stage.
+* Retrieval-aware prompt construction.
+* Dynamic grounded system prompt generation.
+* Context injection into ExecutionContext.
+* Source attribution metadata propagation.
+
+#### Document Ingestion
+
+* Complete document ingestion workflow.
+* `POST /documents/ingest` endpoint.
+* End-to-end Parse → Chunk → Embed → Store pipeline.
+* Automated vector persistence through the HTTP API.
+
+#### Chat & Streaming
+
+* Configurable Retrieval-Augmented Generation controls.
+* Document-scoped retrieval.
+* Configurable `top_k` retrieval.
+* Configurable similarity score threshold.
+* Source attribution metadata streamed through Server-Sent Events (SSE).
+
+#### Configuration
+
+* Global RAG configuration.
+* Configurable default retrieval parameters.
+* Provider-independent RAG settings.
+
+#### Testing
+
+* End-to-end RAG playground integration test.
+
+---
+
+### Changed
+
+* Integrated Retrieval directly into the AI Execution Pipeline through a dedicated pipeline stage.
+* Extended AIEngine to support Retrieval-Augmented Generation execution.
+* Expanded ExecutionContext with request metadata used throughout the RAG workflow.
+* Extended ChatService to expose Retrieval-Augmented Generation controls.
+* Expanded ChatRequest schema with configurable retrieval parameters.
+* Extended the document workflow to support complete knowledge ingestion.
+* Added configurable runtime control over RAG execution.
+* Updated SSE metadata events to include source attribution information.
+
+---
+
+### Improved
+
+* Established a complete grounded reasoning pipeline from user query to AI response.
+* Eliminated architectural separation between semantic retrieval and conversational reasoning while preserving subsystem independence.
+* Improved response transparency through source attribution.
+* Reduced hallucination risk by grounding responses in retrieved document context.
+* Enabled configurable retrieval behavior on a per-request basis.
+* Preserved provider independence across AI providers, embedding providers, and vector database implementations.
+* Standardized document ingestion through a dedicated REST endpoint.
+
+---
+
+### Refactored
+
+* Introduced a dedicated RAG subsystem independent of Retrieval and AI Engine implementations.
+* Refactored the Execution Pipeline to support contextual reasoning through modular pipeline stages.
+* Centralized grounded prompt generation inside RAGPromptBuilder.
+* Separated context formatting responsibilities into ContextFormatter.
+* Simplified document ingestion by consolidating parsing, chunking, embedding generation, and vector persistence inside DocumentService.
+* Updated AIEngine orchestration to support configurable Retrieval-Augmented Generation workflows.
+* Standardized runtime configuration using centralized RAG settings.
+
+---
+
+### Fixed
+
+* Fixed document ingestion workflow by correcting UploadFile handling.
+* Fixed missing EmbeddingManager initialization inside DocumentService.
+* Fixed inconsistent document ingestion API behavior.
+* Fixed missing runtime controls for Retrieval-Augmented Generation.
+* Fixed missing source attribution in Server-Sent Events metadata.
+* Fixed configuration fallback handling for retrieval parameters.
+
+---
+
+## 🏛️ Architecture Impact
+
+The platform now includes a complete provider-independent Retrieval-Augmented Generation (RAG) execution pipeline.
+
+Unlike Milestone 14, where semantic retrieval operated independently from conversational reasoning, this milestone integrates retrieval directly into the AI Engine through a dedicated execution pipeline stage while preserving subsystem boundaries.
+
+The resulting architecture introduces grounded conversational intelligence by enriching prompts with retrieved knowledge before provider invocation.
+
+```text
+User Query
+      │
+      ▼
+ExecutionPipeline
+      │
+      ▼
+MemoryStep
+      │
+      ▼
+RAGStep
+      │
+      ├──────────────► RetrievalManager
+      │                     │
+      │                     ▼
+      │              Semantic Retrieval
+      │                     │
+      │                     ▼
+      │              ContextFormatter
+      │                     │
+      ▼                     │
+Grounded Prompt ◄───────────┘
+      │
+      ▼
+ProviderStep
+      │
+      ▼
+Large Language Model
+      │
+      ▼
+Grounded Response
+      │
+      ▼
+Server-Sent Events (Sources + Tokens)
+```
+
+This milestone completes the first generation of Retrieval-Augmented Generation by connecting the Knowledge Pipeline with the AI Execution Pipeline while preserving the project's modular, provider-independent architecture.
+
+---
 
 ## Milestone 11 — Chunking Pipeline
 
@@ -925,6 +1087,8 @@ This milestone completes the semantic retrieval layer of the platform and prepar
 
 ✅ v0.6.0 — Semantic Retrieval Platform
 
+✅ v0.7.0 — Grounded Conversational Intelligence
+
 ## Milestones Covered
 
 ✅ M1 — Project Foundation
@@ -954,6 +1118,8 @@ This milestone completes the semantic retrieval layer of the platform and prepar
 ✅ M13 — ChromaDB Integration
 
 ✅ M14 — Retrieval Pipeline
+
+✅ M15 — Retrieval-Augmented Generation (RAG)
 
 
 ---

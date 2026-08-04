@@ -12,7 +12,7 @@ The roadmap is intentionally adaptive. As the architecture evolves, milestones m
 
 # Current Version
 
-**v0.6.0**
+**v0.7.0**
 
 ---
 
@@ -24,37 +24,37 @@ The roadmap is intentionally adaptive. As the architecture evolves, milestones m
 
 ## Current Phase
 
-✅ **Phase 3 — Knowledge & Retrieval**
+✅ **Phase 4 — Intelligent Workflows**
 
 ## Current Milestone
 
-⏳ **M15 — Retrieval-Augmented Generation (RAG)**
+⏳ **M16 — LangGraph Integration**
 
 ## Last Completed Milestone
 
-✅ **M14 — Retrieval Pipeline**
+✅ **M15 — Retrieval-Augmented Generation (RAG)**
 
 ---
 
 # Overall Progress
 
 ```text
-█████████████████░░░░
+███████████████████░░░░
 
 Phase Progress
 
 Phase 1  ✅ 100%
 Phase 2  ✅ 100%
-Phase 3  ✅ 92%
+Phase 3  ✅ 100%
 Phase 4  ⬜ 0%
 Phase 5  ⬜ 0%
 
-Overall Project ≈ 81%
+Overall Project ≈ 86%
 ```
 
-The Modular AI Engine now includes a complete provider-independent knowledge pipeline capable of ingesting, processing, embedding, storing, and semantically retrieving knowledge from uploaded documents.
+The Modular AI Engine now includes a complete provider-independent knowledge pipeline capable of ingesting, processing, embedding, storing, retrieving, and reasoning over uploaded knowledge through Retrieval-Augmented Generation (RAG).
 
-With the Retrieval subsystem now complete, future development focuses on Retrieval-Augmented Generation (RAG), context-aware AI responses, workflow orchestration, intelligent tooling, and production readiness while preserving the project's modular, provider-independent architecture.
+With the Retrieval-Augmented Generation pipeline now complete, future development shifts toward workflow orchestration, LangGraph integration, intelligent tool execution, and production readiness while preserving the project's modular, provider-independent architecture.
 
 ---
 
@@ -100,11 +100,11 @@ Transform the AI Engine into a modular execution platform capable of supporting 
 
 # Phase 3 — Knowledge & Retrieval
 
-**Status:** 🚧 In Progress
+**Status:** ✅ Completed
 
 ### Objective
 
-Enable the AI Engine to understand, retrieve, and reason over uploaded knowledge sources.
+Enable the AI Engine to ingest, retrieve, and reason over uploaded knowledge through a complete provider-independent Retrieval-Augmented Generation (RAG) pipeline.
 
 ---
 
@@ -216,38 +216,55 @@ Enable the AI Engine to understand, retrieve, and reason over uploaded knowledge
 
 ## M15 — Retrieval-Augmented Generation (RAG)
 
-### Objectives
+**Status**
 
-- Retrieval-Augmented prompt construction
+✅ Completed
+
+### Delivered
+
+- RAG subsystem
+- RAGManager orchestration layer
+- ContextFormatter
+- RAGPromptBuilder
+- RAGContext domain model
+- SourceAttribution model
+- RAGStep execution pipeline stage
+- Retrieval-aware prompt construction
 - Context injection into the AI Engine
-- Retrieval-aware execution pipeline
-- Prompt context management
-- Source attribution
 - Grounded AI responses
-- Configurable RAG workflows
-- Hallucination reduction
+- Source attribution support
+- Configurable RAG execution
+- End-to-end document ingestion endpoint
+- Runtime RAG configuration
+- End-to-end RAG integration testing
 
 ---
 
-# Phase 4 — Intelligence
+# Phase 4 — Intelligent Workflows
 
 **Status:** ⬜ Planned
 
 ### Objective
 
-Transform the AI Engine from a conversational backend into a full AI reasoning platform.
+Extend the grounded AI Engine with intelligent workflow orchestration, dynamic execution graphs, external tool integration, and autonomous reasoning capabilities.
 
 ---
 
 ## M16 — LangGraph Integration
 
+**Status**
+
+⏳ Next
+
 ### Objectives
 
-- Workflow orchestration
-- Stateful execution
-- Dynamic routing
-- Decision making
-- Graph-based workflows
+- LangGraph workflow integration
+- Stateful graph execution
+- Dynamic execution routing
+- Graph-based reasoning
+- Conditional execution
+- Human-in-the-loop support
+- Workflow visualization
 
 ---
 
@@ -350,9 +367,10 @@ The first stable release should provide a production-grade modular AI backend ca
 
 ### Planned Enhancements
 
-- Workflow orchestration
+- Advanced workflow orchestration
 - Tool Calling
 - LangGraph integration
+- Multi-agent execution
 
 ---
 
@@ -373,6 +391,10 @@ The first stable release should provide a production-grade modular AI backend ca
 - Provider-Independent Retrieval Pipeline
 - Query Embedding Pipeline
 - Semantic Vector Retrieval
+- Retrieval-Augmented Generation (RAG)
+- Grounded Prompt Construction
+- Source Attribution
+- End-to-End Knowledge Ingestion
 
 ### Planned
 
@@ -403,11 +425,11 @@ The first stable release should provide a production-grade modular AI backend ca
 
 ### Planned
 
-- Retrieval-Augmented Generation (RAG)
-- Context-aware prompt construction
-- Source attribution
 - Hybrid retrieval
 - Metadata-aware ranking
+- Semantic reranking
+- Parent-child retrieval
+- Cross-document retrieval
 
 ---
 
@@ -420,7 +442,7 @@ The platform should support:
 - Workflow Routing
 - Multi-Agent Systems
 - Autonomous Reasoning
-- Advanced Retrieval-Augmented Generation (RAG)
+- Agentic Retrieval-Augmented Generation (RAG)
 
 ---
 

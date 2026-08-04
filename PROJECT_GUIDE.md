@@ -64,8 +64,6 @@ The surrounding application remains largely unchanged while the execution engine
 
 # High-Level Architecture
 
-The current architecture separates application concerns into independent layers.
-
 ```text
                     Client
                        │
@@ -73,38 +71,48 @@ The current architecture separates application concerns into independent layers.
                     FastAPI
                        │
                        ▼
-                   API Layer
+                    API Layer
                        │
                        ▼
-                 Service Layer
-                ┌────────┴──────────────────────────────────────────────────────────────┐
-                ▼                                                                       ▼
-           AI Engine                                                         Knowledge Pipeline
-                │                                                                       │
-                ▼                                                                       ▼
-      Execution Pipeline                                                    Document Processing
-                │                                                                       │
-                ▼                                                                       ▼
-          Provider Layer                                                          Chunking
-                │                                                                       │
-                ▼                                                                       ▼
-              LLM                                                           Embedding Generation
-                                                                                     │
-                                                                                     ▼
-                                                                              Vector Storage
-                                                                                     │
-                                                                                     ▼
-                                                                                Retrieval
-                                                                                     │
-                                                                                     ▼
-                                                                       RAG (future)
+                  Service Layer
+          ┌────────────┴──────────────────────────────────────────────────────┐
+          ▼                                                                   ▼
+      AI Engine                                                      Knowledge Pipeline
+          │                                                                   │
+          ▼                                                                   ▼
+ Execution Pipeline                                              Document Processing
+          │                                                                   │
+          ▼                                                                   ▼
+    Memory Step                                                          Chunking
+          │                                                                   │
+          ▼                                                                   ▼
+      RAG Step                                                      Embedding Generation
+          │                                                                   │
+          ▼                                                                   ▼
+   Provider Step                                                     Vector Storage
+          │                                                                   │
+          ▼                                                                   ▼
+          LLM                                                             Retrieval
+                                                                              │
+                                                                              ▼
+                                                                      RAG Subsystem
+                                                                              │
+                                                                              ▼
+                                                                      Context Package
+                                                                              │
+                                                                              ▼
+                                                                        AI Execution
 ```
 
-The AI Engine orchestrates conversational reasoning while remaining completely provider-independent.
+The Modular AI Engine now consists of two major architectural domains.
 
-The Knowledge Pipeline independently transforms uploaded documents into searchable knowledge through a sequence of specialized subsystems. Document Processing produces standardized `Document` objects, the Chunking subsystem generates retrieval-ready chunks, the Embedding subsystem converts those chunks into provider-independent vector embeddings, the Vector Storage subsystem persists those embeddings, and the Retrieval subsystem performs provider-independent semantic search over persisted knowledge.
+The **AI Execution domain** orchestrates conversational reasoning through a modular execution pipeline composed of independent pipeline steps. Each step owns a single responsibility and communicates through a shared `ExecutionContext`.
 
-Each subsystem communicates exclusively through standardized domain models, allowing ingestion, embedding generation, vector persistence, semantic retrieval, and future Retrieval-Augmented Generation (RAG) workflows to evolve independently while preserving stable architectural boundaries.
+The **Knowledge Pipeline** transforms uploaded documents into grounded knowledge by passing them through independent Document Processing, Chunking, Embedding, Vector Storage, Retrieval, and Retrieval-Augmented Generation (RAG) subsystems.
+
+Rather than embedding retrieval directly into conversational execution, the platform keeps knowledge preparation and AI execution architecturally independent. The RAG subsystem acts as the bridge between these domains by transforming retrieval results into grounded prompt context before AI generation.
+
+This separation preserves provider independence, subsystem isolation, and long-term extensibility while enabling future workflow orchestration, LangGraph execution, hybrid retrieval, and multi-agent reasoning.
 
 ---
 
@@ -193,77 +201,148 @@ Every user request follows a predictable execution path through the system.
 
 ```text
 Client
-        │
-        ▼
+   │
+   ▼
 FastAPI
-        │
-        ▼
+   │
+   ▼
 API Router
-        │
-        ▼
+   │
+   ▼
 Service Layer
-        │
-        ▼
+   │
+   ▼
 AIEngine
-        │
-        ▼
+   │
+   ▼
 ExecutionContext
-        │
-        ▼
+   │
+   ▼
 ExecutionPipeline
-        │
-        ├───────────────────────┐
-        ▼                       │
-MemoryStep                      │
-        ▼                       │
-ProviderStep                    │
-        │                       │
-        ├── execute()           │
-        └── stream()            │
-        ▼
+   │
+   ▼
+MemoryStep
+   │
+   ▼
+RAGStep
+   │
+   ▼
+ProviderStep
+   │
+   ▼
 ProviderFactory
-        │
-        ▼
+   │
+   ▼
 Configured Provider
-        │
-        ▼
+   │
+   ▼
 Large Language Model
-        │
-        ▼
+   │
+   ▼
 StreamingResponse / Standard Response
-        │
-        ▼
+   │
+   ▼
 Client
-
-(Independent Knowledge Pipeline)
-
-Client
-        │
-        ▼
-Document API
-        │
-        ▼
-DocumentService
-        │
-        ▼
-DocumentManager
-        │
-        ▼
-ChunkManager
-        │
-        ▼
-EmbeddingManager
-        │
-        ▼
-VectorStoreManager
-        │
-        ▼
-RetrievalManager
 ```
 
-The AI Engine serves as the orchestration layer and delegates work to the Execution Pipeline.
+The AI Engine coordinates execution by passing a shared `ExecutionContext` through a sequence of specialized pipeline stages.
 
-Each pipeline step focuses on a single responsibility, allowing the pipeline to evolve without changing the engine itself.
+The MemoryStep prepares conversational history, the RAGStep retrieves relevant knowledge and constructs grounded prompt context, and the ProviderStep performs provider-specific AI execution.
+
+Each stage modifies only the portion of the execution state that it owns before delegating to the next stage. This architecture allows new reasoning capabilities to be introduced by adding new pipeline steps instead of modifying existing ones.
+
+---
+# Independent Knowledge Pipeline
+
+```text
+Client
+   │
+   ▼
+Document API
+   │
+   ▼
+DocumentService
+   │
+   ▼
+DocumentManager
+   │
+   ▼
+ChunkManager
+   │
+   ▼
+EmbeddingManager
+   │
+   ▼
+VectorStoreManager
+   │
+   ▼
+RetrievalManager
+   │
+   ▼
+RAGManager
+   │
+   ▼
+ContextFormatter
+   │
+   ▼
+RAGPromptBuilder
+   │
+   ▼
+RAGContext
+```
+
+Unlike the conversational execution pipeline, the Knowledge Pipeline is responsible for preparing grounded knowledge.
+
+Each subsystem owns one stage of the knowledge lifecycle:
+
+- Document Processing standardizes uploaded files.
+- Chunking prepares retrieval-ready segments.
+- Embedding Generation creates semantic vector representations.
+- Vector Storage persists embeddings.
+- Retrieval performs semantic search.
+- The RAG subsystem transforms retrieved knowledge into grounded prompt context suitable for AI reasoning.
+
+This complete provider-independent knowledge pipeline now serves as the permanent foundation for every future reasoning workflow.
+
+---
+# Relationship Between Major Subsystems
+
+```text
+                          Modular AI Engine
+                                  │
+      ┌───────────────────────────┼─────────────────────────────────────┐
+      │                           │                                     │
+      ▼                           ▼                                     ▼
+  API Layer                  AI Execution                     Knowledge Pipeline
+      │                           │                                     │
+      ▼                           ▼                                     ▼
+ Service Layer            Execution Pipeline                 Document Processing
+                                  │                                     │
+                                  ▼                                     ▼
+                            Memory Step                            Chunking
+                                  │                                     │
+                                  ▼                                     ▼
+                              RAG Step                         Embedding Pipeline
+                                  │                                     │
+                                  ▼                                     ▼
+                            Provider Step                     Vector Storage
+                                  │                                     │
+                                  ▼                                     ▼
+                                 LLM                               Retrieval
+                                                                          │
+                                                                          ▼
+                                                                   RAG Subsystem
+```
+
+The Modular AI Engine now consists of two cooperating execution domains.
+
+The **AI Execution domain** is responsible for conversational reasoning and provider orchestration.
+
+The **Knowledge Pipeline** is responsible for transforming uploaded information into semantically searchable knowledge.
+
+The newly introduced **RAG subsystem** bridges these two domains by converting semantic retrieval results into grounded prompt context before provider execution.
+
+This architectural separation ensures that conversational reasoning, semantic retrieval, and knowledge preparation remain independently evolvable while communicating only through standardized domain models and execution contracts.
 
 ---
 
@@ -1387,151 +1466,76 @@ This architectural separation allows the system to evolve from a simple conversa
 
 # AI Engine Overview
 
-The AI Engine is intentionally lightweight.
+The AI Engine is the central orchestration component responsible for coordinating conversational AI execution.
 
-Its responsibility is **not** to perform every AI operation itself, but rather to coordinate the execution of specialized components.
+Rather than implementing AI capabilities directly, the engine delegates specialized responsibilities to independent pipeline stages that operate on a shared `ExecutionContext`.
 
-Current responsibilities include:
+With the introduction of Retrieval-Augmented Generation (RAG), the AI Engine now coordinates conversation memory, semantic retrieval, grounded prompt construction, provider invocation, and response generation without directly implementing any of those responsibilities itself.
 
-* Building the execution context
-* Initializing pipeline execution
-* Supporting synchronous execution
-* Supporting streaming execution
-* Returning completed responses
-* Delegating provider communication
-* Coordinating conversation memory
-* Acting as the central entry point for AI reasoning
-
-The AI Engine should never become a monolithic class containing provider logic, prompt generation, memory implementation, or retrieval logic.
-
-Instead, these capabilities are delegated to dedicated subsystems.
+This orchestration-first architecture keeps the engine lightweight while allowing new reasoning capabilities to be introduced through additional pipeline stages.
 
 ---
 
-# AI Execution Lifecycle
+# AI Engine Responsibilities
 
-Every AI request follows the same lifecycle.
+## Current Responsibilities
+
+The AI Engine is responsible for:
+
+* Creating and managing the ExecutionContext
+* Executing the Execution Pipeline
+* Coordinating Conversation Memory
+* Coordinating Retrieval-Augmented Generation (RAG)
+* Managing synchronous execution
+* Managing streaming execution
+* Delegating provider communication
+* Returning standardized responses
+* Preserving provider independence
+
+The AI Engine is **not** responsible for:
+
+* Document parsing
+* Semantic retrieval
+* Prompt formatting
+* Embedding generation
+* Vector database communication
+* Context formatting
+* Provider implementation
+
+---
+
+# AI Engine Architecture Diagram
 
 ```text
-Client
-        │
-        ▼
-ChatService
-        │
-        ▼
-AIEngine
-        │
-        ▼
-ExecutionContext
-        │
-        ▼
-ExecutionPipeline
-        │
-        ▼
-Pipeline Steps
-        │
-        ▼
-Provider
-        │
-        ▼
-LLM
-        │
-        ▼
-Response
+                         AI Engine
+
+                             │
+                             ▼
+
+                     ExecutionContext
+
+                             │
+                             ▼
+
+                    ExecutionPipeline
+
+                             │
+      ┌──────────────────────┼──────────────────────┐
+      ▼                      ▼                      ▼
+
+ MemoryStep              RAGStep             ProviderStep
+
+      │                      │                      │
+      ▼                      ▼                      ▼
+
+Conversation          RetrievalManager      ProviderFactory
+ Memory                     │                      │
+                             ▼                      ▼
+                      ContextFormatter            Provider
+                             │                      │
+                             ▼                      ▼
+                      PromptBuilder               LLM
 ```
-
-The AI Engine itself does not perform reasoning.
-
-It simply coordinates execution.
-
----
-
-# AIEngine
-
-## Purpose
-
-The AIEngine acts as the central orchestration layer for every AI request.
-
-Every capability introduced into the platform should integrate with the AIEngine instead of bypassing it.
-
----
-
-## Current Responsibilities
-
-* Accept execution requests
-* Create ExecutionContext
-* Invoke ExecutionPipeline
-* Support synchronous execution
-* Support streaming execution
-* Return standardized responses
-* Coordinate conversation memory
-* Maintain provider independence
-
----
-
-## Future Responsibilities
-
-As the platform evolves, the AIEngine will coordinate additional capabilities such as:
-
-* Retrieval-Augmented Generation (RAG)
-* Tool Calling
-* LangGraph workflows
-* Multi-Agent coordination
-* Workflow routing
-* Planning
-* AI analytics
-* Token accounting
-
-The AIEngine should coordinate these capabilities without implementing them directly.
-
----
-
-# ExecutionContext
-
-## Purpose
-
-ExecutionContext represents the complete state of a single AI execution.
-
-Instead of passing multiple objects through the pipeline, every pipeline step receives and updates the same shared execution context.
-
-This creates a consistent execution model while keeping components loosely coupled.
-
----
-
-## Current Responsibilities
-
-ExecutionContext currently stores:
-
-* Conversation ID
-* User input
-* LangChain message history
-* Final response
-* Execution metadata
-
-Each pipeline step can safely read from or update the shared context.
-
----
-
-## Future Responsibilities
-
-ExecutionContext is expected to evolve into the central state container for the entire reasoning engine.
-
-Future fields may include:
-
-* Retrieved documents
-* Chunk references
-* Embeddings
-* Vector search results
-* Tool outputs
-* Workflow state
-* Streaming metadata
-* Token usage
-* Latency metrics
-* Provider information
-* Execution traces
-* Reasoning metadata
-
-This design allows new capabilities to be introduced without changing existing method signatures.
 
 ---
 
@@ -1539,15 +1543,31 @@ This design allows new capabilities to be introduced without changing existing m
 
 ## Purpose
 
-The Execution Pipeline coordinates AI execution through independent execution stages.
+The Execution Pipeline coordinates conversational reasoning through a sequence of modular pipeline stages.
 
-Rather than embedding every operation inside the AIEngine, responsibilities are distributed across specialized pipeline steps.
+Each stage performs exactly one architectural responsibility before passing the updated `ExecutionContext` to the next stage.
 
-This makes the execution flow easier to understand, test, extend, and maintain.
+Current Pipeline:
 
----
+```text
+ExecutionPipeline
 
-## Future Pipeline
+        │
+
+        ▼
+
+MemoryStep
+
+        ▼
+
+RAGStep
+
+        ▼
+
+ProviderStep
+```
+
+Future Pipeline:
 
 ```text
 ExecutionPipeline
@@ -1562,10 +1582,6 @@ MemoryStep
 
         ▼
 
-RetrieverStep
-
-        ▼
-
 RAGStep
 
         ▼
@@ -1574,16 +1590,237 @@ ToolStep
 
         ▼
 
+PlanningStep
+
+        ▼
+
 ProviderStep
 ```
 
-Each step performs one well-defined responsibility before passing the updated ExecutionContext to the next step.
+The pipeline intentionally grows through **new pipeline stages** instead of expanding existing ones, preserving loose coupling and minimizing regression risk.
 
 ---
 
-## Why a Pipeline?
+# ExecutionContext
 
-A pipeline architecture provides several advantages.
+## Purpose
+
+ExecutionContext represents the complete state of a single AI request.
+
+Every pipeline stage reads from and writes to this shared execution object.
+
+Current responsibilities include:
+
+* Conversation ID
+* Conversation history
+* User message
+* System prompt
+* Retrieved context
+* RAGContext
+* Source attribution
+* Runtime RAG configuration
+* Streaming metadata
+* Provider configuration
+* Response
+* Execution metadata
+
+ExecutionContext acts as the shared contract between every pipeline stage while remaining independent of any specific subsystem implementation.
+
+---
+
+# RAGStep
+
+The RAGStep introduces grounded reasoning into the AI Execution Pipeline.
+
+Rather than communicating directly with the Retrieval subsystem, the step delegates Retrieval-Augmented Generation to the dedicated `RAGManager`.
+
+Responsibilities:
+
+* Read runtime RAG configuration
+* Invoke RetrievalManager through RAGManager
+* Build grounded prompt context
+* Attach retrieved knowledge to the ExecutionContext
+* Generate source attribution
+* Forward enriched execution state to ProviderStep
+
+The RAGStep never communicates directly with vector databases or embedding providers.
+
+Its responsibility is orchestration rather than implementation.
+
+```text
+ExecutionContext
+        │
+        ▼
+RAGStep
+        │
+        ▼
+RAGManager
+        │
+        ▼
+RetrievalManager
+        │
+        ▼
+RetrievalResult
+        │
+        ▼
+ContextFormatter
+        │
+        ▼
+PromptBuilder
+        │
+        ▼
+RAGContext
+        │
+        ▼
+ExecutionContext
+```
+
+---
+
+# MemoryStep
+
+MemoryStep prepares conversational state before contextual reasoning begins.
+
+Responsibilities include:
+
+* Load conversation history
+* Restore previous messages
+* Attach conversation state to the ExecutionContext
+* Prepare downstream pipeline stages
+
+MemoryStep never performs retrieval, prompt construction, provider communication, or response generation.
+
+Its sole responsibility is conversation state management.
+
+---
+
+# ProviderStep
+
+ProviderStep is the final execution stage.
+
+Responsibilities include:
+
+* Receive grounded prompt context
+* Invoke the configured provider
+* Support synchronous execution
+* Support streaming execution
+* Return provider responses
+
+ProviderStep intentionally does not:
+
+* Retrieve knowledge
+* Build prompts
+* Format context
+* Manage conversation memory
+
+By the time ProviderStep executes, every required piece of context has already been attached to the ExecutionContext.
+
+---
+
+# Streaming Execution
+
+Planned and current streaming events include:
+
+* retrieval_start
+* retrieval_complete
+* context_ready
+* provider_start
+* token
+* provider_complete
+* source_attribution
+* reasoning
+* progress
+* error
+
+---
+
+# Execution Flow
+
+```text
+Client
+      │
+      ▼
+FastAPI
+      │
+      ▼
+API Router
+      │
+      ▼
+ChatService
+      │
+      ▼
+AIEngine
+      │
+      ▼
+ExecutionContext
+      │
+      ▼
+ExecutionPipeline
+      │
+      ▼
+MemoryStep
+      │
+      ▼
+RAGStep
+      │
+      ▼
+ProviderStep
+      │
+      ▼
+LLM
+      │
+      ▼
+Grounded Response
+      │
+      ▼
+Client
+```
+
+---
+
+# Execution State Evolution
+
+As the request moves through the pipeline, the ExecutionContext becomes progressively richer.
+
+```text
+User Message
+      │
+      ▼
+Conversation Memory
+      │
+      ▼
+Retrieved Knowledge
+      │
+      ▼
+Grounded Prompt
+      │
+      ▼
+Provider Response
+```
+
+Each pipeline stage contributes one layer of information without modifying responsibilities owned by other stages.
+
+This progressive enrichment model keeps the execution pipeline modular, testable, and extensible.
+
+---
+
+# Future AI Engine Responsibilities
+
+Future responsibilities include:
+
+* Intelligent routing
+* Tool calling
+* Workflow orchestration
+* LangGraph execution
+* Planning
+* Multi-agent coordination
+* AI analytics
+* Token accounting
+* Persistent execution state
+* Human-in-the-loop workflows
+
+---
+
 
 ### Separation of Concerns
 
@@ -1730,18 +1967,18 @@ Client
 
 Current streaming events include:
 
-* metadata
+* retrieval_start
+* retrieval_complete
+* context_ready
+* provider_start
 * token
-* done
-
-Planned future events include:
-
-* retrieval
-* tool_start
-* tool_end
+* provider_complete
+* source_attribution
 * reasoning
 * progress
 * error
+
+This streaming architecture is aligned with the AI Engine's execution model and can be extended through additional events as new pipeline stages are introduced.
 
 ---
 

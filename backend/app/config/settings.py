@@ -7,27 +7,21 @@ class Settings(BaseSettings):
     """Application configuration loaded from environment variables."""
 
     APP_NAME: str = "Modular AI Engine"
-    APP_VERSION: str = "0.1.0"
+    APP_VERSION: str = "0.7.0"
     DEBUG: bool = True
 
     LLM_PROVIDER: str = "groq"
-
     EMBEDDING_PROVIDER: str = "gemini"
-
     VECTORSTORE_PROVIDER: str = "chromadb"
 
     CHROMADB_PATH: str = "./chroma_db"
-
     DEFAULT_VECTOR_COLLECTION: str = "documents"
 
-    GROQ_API_KEY: str
-
+    GROQ_API_KEY: str = ""
     OPENAI_API_KEY: str = ""
-
     GEMINI_API_KEY: str = ""
 
     GEMINI_EMBEDDING_MODEL: str = "gemini-embedding-001"
-
     OPENAI_EMBEDDING_MODEL: str = "text-embedding-3-small"
 
     # ==========================
@@ -40,8 +34,8 @@ class Settings(BaseSettings):
     # Chunking Settings
     # ==========================
 
-    CHUNK_SIZE: int = 100
-    CHUNK_OVERLAP: int = 20
+    CHUNK_SIZE: int = 500
+    CHUNK_OVERLAP: int = 50
     KEEP_SEPARATOR: bool = True
     IS_SEPARATOR_REGEX: bool = False
     CHUNK_SEPARATORS: list[str] = [
@@ -55,6 +49,13 @@ class Settings(BaseSettings):
         " ",
         "",
     ]
+
+    # ==========================
+    # RAG Settings
+    # ==========================
+    RAG_ENABLED: bool = True
+    RAG_TOP_K: int = 5
+    RAG_SCORE_THRESHOLD: float = 0.2
 
     model_config = SettingsConfigDict(
         env_file=".env",
